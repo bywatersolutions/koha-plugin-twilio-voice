@@ -1,0 +1,9 @@
+name: Twilio Voice Plugin
+author: Kyle M Hall
+date_authored: 2020-05-13
+date_updated: 1900-01-01
+minimum_version: {MINIMUM_VERSION}
+maximum_version:
+version: {VERSION}
+description: This plugin enables sending of phone message to patrons via Twilio.
+module: Koha::Plugin::Com::ByWaterSolutions::TwilioVoice
