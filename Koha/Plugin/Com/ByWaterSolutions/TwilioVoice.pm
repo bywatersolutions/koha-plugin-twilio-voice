@@ -47,10 +47,8 @@ sub configure {
 
         ## Grab the values we already have for our settings, if any exist
         $template->param(
-            enable_opac_payments => $self->retrieve_data('enable_opac_payments'),
-            foo             => $self->retrieve_data('foo'),
-            bar             => $self->retrieve_data('bar'),
-            last_upgraded   => $self->retrieve_data('last_upgraded'),
+            AccountSid => $self->retrieve_data('AccountSid'),
+            AuthToken  => $self->retrieve_data('AuthToken'),
         );
 
         $self->output_html( $template->output() );
@@ -58,10 +56,8 @@ sub configure {
     else {
         $self->store_data(
             {
-                enable_opac_payments => $cgi->param('enable_opac_payments'),
-                foo                => $cgi->param('foo'),
-                bar                => $cgi->param('bar'),
-                last_configured_by => C4::Context->userenv->{'number'},
+                AccountSid => $cgi->param('AccountSid'),
+                AuthToken  => $cgi->param('AuthToken'),
             }
         );
         $self->go_home();
