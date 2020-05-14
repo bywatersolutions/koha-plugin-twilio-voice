@@ -4,10 +4,13 @@ use Modern::Perl;
 
 use base qw(Koha::Plugins::Base);
 
-use C4::Context;
 use C4::Auth;
+use C4::Context;
+use Koha::Notice::Messages;
 
 use Mojo::JSON qw(decode_json);
+use Number::Phone::Normalize;
+use WWW::Twilio::API;
 
 ## Here we set our plugin version
 our $VERSION = "{VERSION}";
@@ -40,6 +43,40 @@ sub new {
     return $self;
 }
 
+sub cronjob {
+    my ( $self ) = @_;
+
+    my $twilio = WWW::Twilio::API->new(
+        AccountSid => $self->retrieve_data('AccountSid'),
+        AuthToken  => $self->retrieve_data('AuthToken'),
+    );
+
+    my $from = $self->retrieve_data('From');
+
+    my $messages = Koha::Notice::Messages->search({ status => 'pending', message_transport_type => 'phone' });
+
+    while ( my $m = $messages->next ) {
+        my $patron = Koha::Patrons->find( $m->borrowernumber );
+        next unless $patron;
+
+        my $phone = $patron->phone || $patron->mobile;
+        #FIXME: the line below doesn't work yet
+        $phone = phone_intl($phone, 'CountryCodeOut' => '1', 'CountryCode' => '1', 'IntlPrefixOut' => '+', 'AlwaysLD' => 1, 'IntlPrefix' => '99', 'IntlPrefixOut' => '99', 'LDPrefix' => '88' );
+        next unless $phone;
+
+        my $response = $twilio->POST(
+            'Calls',
+            From => $from, # Any phone number you specify here must be a Twilio phone number (you can purchase a number through the console) or a verified outgoing caller id for your account.
+            To   => '+18145731189',
+            Url  => 'https://staff-twilio.bwsdev2.bywatersolutions.com/api/v1/contrib/twiliovoice/messages/5'
+        );
+
+        #TODO: Check for successful queuing
+        #TODO: Add callback to report failure
+    }
+
+}
+
 sub configure {
     my ( $self, $args ) = @_;
     my $cgi = $self->{'cgi'};
@@ -51,6 +88,7 @@ sub configure {
         $template->param(
             AccountSid => $self->retrieve_data('AccountSid'),
             AuthToken  => $self->retrieve_data('AuthToken'),
+            From       => $self->retrieve_data('From'),
         );
 
         $self->output_html( $template->output() );
@@ -60,6 +98,7 @@ sub configure {
             {
                 AccountSid => $cgi->param('AccountSid'),
                 AuthToken  => $cgi->param('AuthToken'),
+                From       => $cgi->param('From'),
             }
         );
         $self->go_home();

@@ -26,6 +26,12 @@
             <input type="text" class="form-control" name="AuthToken" value="[% AuthToken %]"/>
         </div>
 
+        <div class="form-group">
+            <label for="From">From Phone Number:</label>
+            <input type="text" class="form-control" name="From" value="[% From %]"/>
+            <div class="hint">Any phone number you specify here must be a Twilio phone number (you can purchase a number through the console) or a verified outgoing caller id for your account.</div>
+        </div>
+
         <button type="submit" class="btn btn-default">Submit</button>
 
     </form>
