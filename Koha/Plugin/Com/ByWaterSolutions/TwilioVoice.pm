@@ -7,6 +7,8 @@ use base qw(Koha::Plugins::Base);
 use C4::Context;
 use C4::Auth;
 
+use Mojo::JSON qw(decode_json);
+
 ## Here we set our plugin version
 our $VERSION = "{VERSION}";
 our $MINIMUM_VERSION = "{MINIMUM_VERSION}";

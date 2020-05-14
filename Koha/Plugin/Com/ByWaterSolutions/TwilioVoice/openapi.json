@@ -1,31 +1,22 @@
 {
-  "/patrons/{patron_id}/bother": {
-    "put": {
-      "x-mojo-to": "Com::ByWaterSolutions::TwilioVoice::BotherPatronController#bother",
+  "/messages/{message_id}": {
+    "post": {
+      "x-mojo-to": "Com::ByWaterSolutions::TwilioVoice::API#twiml",
       "operationId": "BotherPatron",
-      "tags": ["patrons"],
+      "tags": ["messages"],
       "parameters": [{
-        "name": "patron_id",
+        "name": "message_id",
         "in": "path",
         "description": "Internal patron identifier",
         "required": true,
         "type": "integer"
       }],
       "produces": [
-        "application/json"
+        "text/plain"
       ],
       "responses": {
         "200": {
-          "description": "A bothered patron",
-          "schema": {
-              "type": "object",
-                "properties": {
-                  "pissed": {
-                    "description": "If the patron got pissed",
-                    "type": "boolean"
-                  }
-                }
-          }
+          "description": "TwiML"
         },
         "404": {
           "description": "An error occured",
@@ -38,11 +29,6 @@
                   }
                 }
           }
-        }
-      },
-      "x-koha-authorization": {
-        "permissions": {
-          "borrowers": "1"
         }
       }
     }

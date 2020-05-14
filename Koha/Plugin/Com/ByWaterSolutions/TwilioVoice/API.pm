@@ -1,4 +1,4 @@
-package Koha::Plugin::Com::ByWaterSolutions::TwilioVoice::BotherPatronController;
+package Koha::Plugin::Com::ByWaterSolutions::TwilioVoice::API;
 
 # This file is part of Koha.
 #
@@ -23,21 +23,24 @@ use Mojo::Base 'Mojolicious::Controller';
 
 =head2 Class Methods
 
-=head3 Method that bothers the patron, with no side effects
+=head3 Returns TwiML for the given message
 
 =cut
 
-sub bother {
+sub twiml {
     my $c = shift->openapi->valid_input or return;
 
-    my $patron_id = $c->validation->param('patron_id');
-    my $patron    = Koha::Patrons->find($patron_id);
+    my $message_id = $c->validation->param('message_id');
 
-    unless ($patron) {
-        return $c->render( status => 404, openapi => { error => "Patron not found." } );
+    unless ($message) {
+        return $c->render( status => 404, openapi => { error => "Message not found." } );
     }
 
-    return $c->render( status => 200, openapi => { bothered => Mojo::JSON->true } );
+    return $c->render( status => 200, format => "xml", text => q{<?xml version="1.0" encoding="UTF-8"?>
+        <Response>
+            <Say>Hello, world!</Say>
+        </Response>
+    });
 }
 
 1;
