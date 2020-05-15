@@ -1,33 +1,69 @@
 {
-  "/messages/{message_id}": {
-    "post": {
-      "x-mojo-to": "Com::ByWaterSolutions::TwilioVoice::API#twiml",
-      "operationId": "BotherPatron",
-      "tags": ["messages"],
-      "parameters": [{
-        "name": "message_id",
-        "in": "path",
-        "description": "Internal patron identifier",
-        "required": true,
-        "type": "integer"
-      }],
-      "produces": [
+  "/messages/{message_id}":{
+    "post":{
+      "x-mojo-to":"Com::ByWaterSolutions::TwilioVoice::API#twiml",
+      "operationId":"BotherPatron",
+      "tags":[
+        "messages"
+      ],
+      "parameters":[
+        {
+          "name":"message_id",
+          "in":"path",
+          "description":"Internal patron identifier",
+          "required":true,
+          "type":"integer"
+        }
+      ],
+      "produces":[
         "text/plain"
       ],
-      "responses": {
-        "200": {
-          "description": "TwiML"
+      "responses":{
+        "200":{
+          "description":"TwiML"
         },
-        "404": {
-          "description": "An error occured",
-          "schema": {
-              "type": "object",
-                "properties": {
-                  "error": {
-                    "description": "An explanation for the error",
-                    "type": "string"
-                  }
-                }
+        "404":{
+          "description":"An error occured",
+          "schema":{
+            "type":"object",
+            "properties":{
+              "error":{
+                "description":"An explanation for the error",
+                "type":"string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "post":{
+    "x-mojo-to":"Com::ByWaterSolutions::TwilioVoice::API#update_message_status",
+    "operationId":"updateMessageStatus",
+    "tags":[
+      "messages"
+    ],
+    "parameters":[
+      {
+        "name":"body",
+        "in":"body",
+        "description":"A JSON object containing information about the call result",
+        "required":true
+      }
+    ],
+    "responses":{
+      "200":{
+        "description":"Message updated"
+      },
+      "404":{
+        "description":"An error occured",
+        "schema":{
+          "type":"object",
+          "properties":{
+            "error":{
+              "description":"An explanation for the error",
+              "type":"string"
+            }
           }
         }
       }

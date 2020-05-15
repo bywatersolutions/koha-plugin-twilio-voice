@@ -8,10 +8,9 @@ use C4::Auth;
 use C4::Context;
 use Koha::Notice::Messages;
 
-use JSON;
+use HTTP::Request::Common;
 use LWP::UserAgent;
 use Mojo::JSON qw(decode_json);
-use Number::Phone::Normalize;
 use WWW::Twilio::API;
 
 ## Here we set our plugin version
@@ -48,8 +47,8 @@ sub new {
 sub cronjob {
     my ( $self ) = @_;
 
-    $AccountSid = $self->retrieve_data('AccountSid');
-    $AuthToken  = $self->retrieve_data('AuthToken');
+    my $AccountSid = $self->retrieve_data('AccountSid');
+    my $AuthToken  = $self->retrieve_data('AuthToken');
 
     my $twilio = WWW::Twilio::API->new(
         AccountSid => $AccountSid,
@@ -70,17 +69,21 @@ sub cronjob {
         my $ua = LWP::UserAgent->new;
         my $request = HTTP::Request->new(GET => "https://lookups.twilio.com/v1/PhoneNumbers/$phone?CountryCode=US");
         $request->authorization_basic($AccountSid, $AuthToken);
-        my $response = $ua->request($req);
-        next if $respnse->code eq "404";
-        my $data = from_json( $response->decoded_content );
+        my $response = $ua->request($request);
+        next if $response->code eq "404";
+        my $data = decode_json( $response->decoded_content );
         my $to = $data->{phone_number};
 
-        my $response = $twilio->POST(
-            'Calls',
-            From => $from, # Any phone number you specify here must be a Twilio phone number (you can purchase a number through the console) or a verified outgoing caller id for your account.
-            To   => $to,,
-            Url  => "https://staff-twilio.bwsdev2.bywatersolutions.com/api/v1/contrib/twiliovoice/messages/" . $m->id,
-        );
+        # Send the call request
+        my $url = "https://api.twilio.com/2010-04-01/Accounts/$AccountSid/Calls.json";
+        my $twiml_url = "https://staff-twilio.bwsdev2.bywatersolutions.com/api/v1/contrib/twiliovoice/messages/" . $m->id;
+        my $status_callback_url = "https://staff-twilio.bwsdev2.bywatersolutions.com/api/v1/contrib/twiliovoice/message/" . $m->id;
+        $request = POST $url, [From => $from, To => $to, Url => $twiml_url];
+        $request->authorization_basic($AccountSid, $AuthToken);
+        $response = $ua->request($request);
+        warn "RESPONSE CODE: " . $response->code;
+        $data = decode_json( $response->decoded_content );
+        warn "RESPONSE CONTENT: " . $data;
 
         #TODO: Check for successful queuing
         #TODO: Add callback to report failure

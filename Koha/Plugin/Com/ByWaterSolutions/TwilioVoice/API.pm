@@ -43,4 +43,14 @@ sub twiml {
     });
 }
 
+sub update_message_status {
+    my $c = shift->openapi->valid_input or return;
+
+    my $body = $c->validation->param('body');
+
+    #TODO Actually update the message status
+
+    return $c->render( status => 200 );
+}
+
 1;
