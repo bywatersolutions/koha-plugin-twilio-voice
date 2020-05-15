@@ -75,10 +75,13 @@ sub before_send_messages {
         my $data = decode_json( $response->decoded_content );
         my $to = $data->{phone_number};
 
+        my $staffClientBaseURL = C4::Context->preference('staffClientBaseURL');
+
         # Send the call request
+        my $message_id = $m->id;
         my $url = "https://api.twilio.com/2010-04-01/Accounts/$AccountSid/Calls.json";
-        my $twiml_url = "https://staff-twilio.bwsdev2.bywatersolutions.com/api/v1/contrib/twiliovoice/messages/" . $m->id;
-        my $status_callback_url = "https://staff-twilio.bwsdev2.bywatersolutions.com/api/v1/contrib/twiliovoice/message/" . $m->id;
+        my $twiml_url = "https://staff-twilio.bwsdev2.bywatersolutions.com/api/v1/contrib/twiliovoice/message/$message_id/twiml";
+        my $status_callback_url = "https://staff-twilio.bwsdev2.bywatersolutions.com/api/v1/contrib/twiliovoice/message/$message_id/status";
         $request = POST $url, [From => $from, To => $to, Url => $twiml_url, StatusCallback => $status_callback_url];
         $request->authorization_basic($AccountSid, $AuthToken);
         $response = $ua->request($request);
