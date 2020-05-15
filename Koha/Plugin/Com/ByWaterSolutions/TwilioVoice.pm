@@ -11,7 +11,6 @@ use Koha::Notice::Messages;
 use HTTP::Request::Common;
 use LWP::UserAgent;
 use Mojo::JSON qw(decode_json);
-use WWW::Twilio::API;
 
 ## Here we set our plugin version
 our $VERSION         = "{VERSION}";
@@ -50,11 +49,6 @@ sub before_send_messages {
 
     my $AccountSid = $self->retrieve_data('AccountSid');
     my $AuthToken  = $self->retrieve_data('AuthToken');
-
-    my $twilio = WWW::Twilio::API->new(
-        AccountSid => $AccountSid,
-        AuthToken  => $AuthToken,
-    );
 
     my $from = $self->retrieve_data('From');
 
