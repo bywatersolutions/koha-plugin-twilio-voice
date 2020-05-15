@@ -44,7 +44,7 @@ sub new {
     return $self;
 }
 
-sub cronjob {
+sub before_send_messages {
     my ( $self ) = @_;
 
     my $AccountSid = $self->retrieve_data('AccountSid');
@@ -64,6 +64,7 @@ sub cronjob {
         next unless $patron;
 
         my $phone = $patron->phone || $patron->mobile;
+        warn "PHONE: $phone";
 
         # Normalize the phone number to E.164 format, Twilio has a convenient ( and free ) API for this.
         my $ua = LWP::UserAgent->new;
@@ -78,15 +79,12 @@ sub cronjob {
         my $url = "https://api.twilio.com/2010-04-01/Accounts/$AccountSid/Calls.json";
         my $twiml_url = "https://staff-twilio.bwsdev2.bywatersolutions.com/api/v1/contrib/twiliovoice/messages/" . $m->id;
         my $status_callback_url = "https://staff-twilio.bwsdev2.bywatersolutions.com/api/v1/contrib/twiliovoice/message/" . $m->id;
-        $request = POST $url, [From => $from, To => $to, Url => $twiml_url];
+        $request = POST $url, [From => $from, To => $to, Url => $twiml_url, StatusCallback => $status_callback_url];
         $request->authorization_basic($AccountSid, $AuthToken);
         $response = $ua->request($request);
         warn "RESPONSE CODE: " . $response->code;
         $data = decode_json( $response->decoded_content );
-        warn "RESPONSE CONTENT: " . $data;
-
-        #TODO: Check for successful queuing
-        #TODO: Add callback to report failure
+        warn "RESPONSE CONTENT: " . Data::Dumper::Dumper($data);
     }
 
 }

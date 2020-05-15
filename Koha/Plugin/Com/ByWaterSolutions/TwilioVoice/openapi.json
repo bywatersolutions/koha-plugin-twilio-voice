@@ -16,7 +16,7 @@
         }
       ],
       "produces":[
-        "text/plain"
+        "application/xml"
       ],
       "responses":{
         "200":{
@@ -37,32 +37,35 @@
       }
     }
   },
-  "post":{
-    "x-mojo-to":"Com::ByWaterSolutions::TwilioVoice::API#update_message_status",
-    "operationId":"updateMessageStatus",
-    "tags":[
-      "messages"
-    ],
-    "parameters":[
-      {
-        "name":"body",
-        "in":"body",
-        "description":"A JSON object containing information about the call result",
-        "required":true
-      }
-    ],
-    "responses":{
-      "200":{
-        "description":"Message updated"
-      },
-      "404":{
-        "description":"An error occured",
-        "schema":{
-          "type":"object",
-          "properties":{
-            "error":{
-              "description":"An explanation for the error",
-              "type":"string"
+  "/message/{message_id}":{
+    "post":{
+      "x-mojo-to":"Com::ByWaterSolutions::TwilioVoice::API#update_message_status",
+      "operationId":"updateMessageStatus",
+      "tags":[
+        "messages"
+      ],
+      "parameters":[
+        {
+          "name":"message_id",
+          "in":"path",
+          "description":"Internal patron identifier",
+          "required":true,
+          "type":"integer"
+        }
+      ],
+      "responses":{
+        "200":{
+          "description":"Message updated"
+        },
+        "404":{
+          "description":"An error occured",
+          "schema":{
+            "type":"object",
+            "properties":{
+              "error":{
+                "description":"An explanation for the error",
+                "type":"string"
+              }
             }
           }
         }

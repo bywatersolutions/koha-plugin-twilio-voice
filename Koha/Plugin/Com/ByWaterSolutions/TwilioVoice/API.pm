@@ -19,6 +19,11 @@ use Modern::Perl;
 
 use Mojo::Base 'Mojolicious::Controller';
 
+use WWW::Twilio::TwiML;
+use WWW::Form::UrlEncoded qw(parse_urlencoded);
+
+use Koha::Notice::Messages;
+
 =head1 API
 
 =head2 Class Methods
@@ -31,26 +36,56 @@ sub twiml {
     my $c = shift->openapi->valid_input or return;
 
     my $message_id = $c->validation->param('message_id');
-
+    my $message = Koha::Notice::Messages->find( $message_id );
     unless ($message) {
         return $c->render( status => 404, openapi => { error => "Message not found." } );
     }
 
-    return $c->render( status => 200, format => "xml", text => q{<?xml version="1.0" encoding="UTF-8"?>
-        <Response>
-            <Say>Hello, world!</Say>
-        </Response>
-    });
+    my $tw = new WWW::Twilio::TwiML;
+    $tw->Response->Say({voice => "alice", language => "en-AU"}, $message->content);
+    print $tw->to_string;
+
+    $message->status('sent');
+    $message->store();
+
+    return $c->render( status => 200, format => "xml", text => $tw->to_string );
 }
 
 sub update_message_status {
     my $c = shift->openapi->valid_input or return;
 
-    my $body = $c->validation->param('body');
+    my $message_id = $c->validation->param('message_id');
+    warn "MESSAGE ID: $message_id";
+    my $message = Koha::Notice::Messages->find( $message_id );
+    unless ($message) {
+        return $c->render( status => 404, openapi => { error => "Message not found." } );
+    }
 
-    #TODO Actually update the message status
+    my $body = $c->req->body;
+    warn "BODY: $body";
 
-    return $c->render( status => 200 );
+    if ( my %data = parse_urlencoded($body) ) {
+        warn Data::Dumper::Dumper( \%data );
+
+        my $twilio_status = $data{CallStatus};
+        warn "TWILIO STATUS: $twilio_status";
+
+        my $status = $twilio_status eq 'queued'      ? 'pending' : # We should get another status update later
+                     $twilio_status eq 'ringing'     ? 'pending' : # Ditto
+                     $twilio_status eq 'in-progress' ? 'sent'    : # The person picked up, basically completed
+                     $twilio_status eq 'completed'   ? 'sent'    : # Clearly completed
+                     $twilio_status eq 'busy'        ? 'pending' : # Phone was busy, requeue and try again
+                     $twilio_status eq 'failed'      ? 'failed'  : # Phone number was most likely invalid
+                     $twilio_status eq 'no-answer'   ? 'pending' : # Nobody picked up, requeue and try again
+                                                        'failed' ; # Staus was something we didn't expect
+        warn "KOHA STATUS: $status";
+        $message->status($status);
+        $message->store();
+
+        return $c->render( status => 200, text => q{} );
+    } else {
+        return $c->render( status => 500, openapi => { error => "Unable to decode json" } );
+    }
 }
 
 1;
