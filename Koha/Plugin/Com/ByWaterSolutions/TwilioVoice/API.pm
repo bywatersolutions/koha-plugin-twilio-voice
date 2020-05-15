@@ -36,14 +36,22 @@ sub twiml {
     my $c = shift->openapi->valid_input or return;
 
     my $message_id = $c->validation->param('message_id');
-    my $message = Koha::Notice::Messages->find( $message_id );
+    my $message    = Koha::Notice::Messages->find($message_id);
     unless ($message) {
-        return $c->render( status => 404, openapi => { error => "Message not found." } );
+        return $c->render(
+            status  => 404,
+            openapi => { error => "Message not found." }
+        );
     }
 
     my $tw = new WWW::Twilio::TwiML;
-    $tw->Response->Say({voice => "alice", language => "en-AU"}, $message->content);
-    print $tw->to_string;
+    $tw->Response->Say(
+        {
+            voice    => "alice",
+            language => "en-AU"
+        },
+        $message->content
+    );
 
     $message->status('sent');
     $message->store();
@@ -55,9 +63,12 @@ sub update_message_status {
     my $c = shift->openapi->valid_input or return;
 
     my $message_id = $c->validation->param('message_id');
-    my $message = Koha::Notice::Messages->find( $message_id );
+    my $message    = Koha::Notice::Messages->find($message_id);
     unless ($message) {
-        return $c->render( status => 404, openapi => { error => "Message not found." } );
+        return $c->render(
+            status  => 404,
+            openapi => { error => "Message not found." }
+        );
     }
 
     my $body = $c->req->body;
@@ -77,8 +88,12 @@ sub update_message_status {
         $message->store();
 
         return $c->render( status => 200, text => q{} );
-    } else {
-        return $c->render( status => 500, openapi => { error => "Unable to decode json" } );
+    }
+    else {
+        return $c->render(
+            status  => 500,
+            openapi => { error => "Unable to decode json" }
+        );
     }
 }
 

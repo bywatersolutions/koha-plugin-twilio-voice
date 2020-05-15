@@ -14,7 +14,7 @@ use Mojo::JSON qw(decode_json);
 use WWW::Twilio::API;
 
 ## Here we set our plugin version
-our $VERSION = "{VERSION}";
+our $VERSION         = "{VERSION}";
 our $MINIMUM_VERSION = "{MINIMUM_VERSION}";
 
 ## Here is our metadata, some keys are required, some are optional
@@ -26,7 +26,8 @@ our $metadata = {
     minimum_version => $MINIMUM_VERSION,
     maximum_version => undef,
     version         => $VERSION,
-    description     => 'This plugin enables sending of phone message to patrons via Twilio.',
+    description =>
+      'This plugin enables sending of phone message to patrons via Twilio.',
 };
 
 sub new {
@@ -45,7 +46,7 @@ sub new {
 }
 
 sub before_send_messages {
-    my ( $self ) = @_;
+    my ($self) = @_;
 
     my $AccountSid = $self->retrieve_data('AccountSid');
     my $AuthToken  = $self->retrieve_data('AuthToken');
@@ -57,7 +58,12 @@ sub before_send_messages {
 
     my $from = $self->retrieve_data('From');
 
-    my $messages = Koha::Notice::Messages->search({ status => 'pending', message_transport_type => 'phone' });
+    my $messages = Koha::Notice::Messages->search(
+        {
+            status                 => 'pending',
+            message_transport_type => 'phone',
+        }
+    );
 
     while ( my $m = $messages->next ) {
         my $patron = Koha::Patrons->find( $m->borrowernumber );
@@ -67,12 +73,15 @@ sub before_send_messages {
 
         # Normalize the phone number to E.164 format, Twilio has a convenient ( and free ) API for this.
         my $ua = LWP::UserAgent->new;
-        my $request = HTTP::Request->new(GET => "https://lookups.twilio.com/v1/PhoneNumbers/$phone?CountryCode=US");
-        $request->authorization_basic($AccountSid, $AuthToken);
+        my $request =
+          HTTP::Request->new( GET =>
+              "https://lookups.twilio.com/v1/PhoneNumbers/$phone?CountryCode=US"
+          );
+        $request->authorization_basic( $AccountSid, $AuthToken );
         my $response = $ua->request($request);
         next if $response->code eq "404";
         my $data = decode_json( $response->decoded_content );
-        my $to = $data->{phone_number};
+        my $to   = $data->{phone_number};
 
         my $staffClientBaseURL = C4::Context->preference('staffClientBaseURL');
         $staffClientBaseURL =~ s/[^[:print:]]+//g;
@@ -83,12 +92,17 @@ sub before_send_messages {
         my $url = "https://api.twilio.com/2010-04-01/Accounts/$AccountSid/Calls.json";
         my $twiml_url = "$staffClientBaseURL/api/v1/contrib/twiliovoice/message/$message_id/twiml";
         my $status_callback_url = "$staffClientBaseURL/api/v1/contrib/twiliovoice/message/$message_id/status";
-        $request = POST $url, [From => $from, To => $to, Url => $twiml_url, StatusCallback => $status_callback_url];
-        $request->authorization_basic($AccountSid, $AuthToken);
-        $response = $ua->request($request);
-        $data = decode_json( $response->decoded_content );
-    }
 
+        $request = POST $url,
+          [
+            From           => $from,
+            To             => $to,
+            Url            => $twiml_url,
+            StatusCallback => $status_callback_url
+          ];
+        $request->authorization_basic( $AccountSid, $AuthToken );
+        $response = $ua->request($request);
+    }
 }
 
 sub configure {
@@ -96,7 +110,7 @@ sub configure {
     my $cgi = $self->{'cgi'};
 
     unless ( $cgi->param('save') ) {
-        my $template = $self->get_template({ file => 'configure.tt' });
+        my $template = $self->get_template( { file => 'configure.tt' } );
 
         ## Grab the values we already have for our settings, if any exist
         $template->param(
@@ -147,8 +161,8 @@ sub api_routes {
 }
 
 sub api_namespace {
-    my ( $self ) = @_;
-    
+    my ($self) = @_;
+
     return 'twiliovoice';
 }
 
