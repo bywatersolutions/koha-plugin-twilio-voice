@@ -55,20 +55,15 @@ sub update_message_status {
     my $c = shift->openapi->valid_input or return;
 
     my $message_id = $c->validation->param('message_id');
-    warn "MESSAGE ID: $message_id";
     my $message = Koha::Notice::Messages->find( $message_id );
     unless ($message) {
         return $c->render( status => 404, openapi => { error => "Message not found." } );
     }
 
     my $body = $c->req->body;
-    warn "BODY: $body";
 
     if ( my %data = parse_urlencoded($body) ) {
-        warn Data::Dumper::Dumper( \%data );
-
         my $twilio_status = $data{CallStatus};
-        warn "TWILIO STATUS: $twilio_status";
 
         my $status = $twilio_status eq 'queued'      ? 'pending' : # We should get another status update later
                      $twilio_status eq 'ringing'     ? 'pending' : # Ditto
@@ -78,7 +73,6 @@ sub update_message_status {
                      $twilio_status eq 'failed'      ? 'failed'  : # Phone number was most likely invalid
                      $twilio_status eq 'no-answer'   ? 'pending' : # Nobody picked up, requeue and try again
                                                         'failed' ; # Staus was something we didn't expect
-        warn "KOHA STATUS: $status";
         $message->status($status);
         $message->store();
 
