@@ -87,7 +87,7 @@ sub update_message_status {
         $message->status($status);
         $message->store();
 
-        return $c->render( status => 200, text => q{} );
+        return $c->render( status => 204, text => q{} );
     }
     else {
         return $c->render(

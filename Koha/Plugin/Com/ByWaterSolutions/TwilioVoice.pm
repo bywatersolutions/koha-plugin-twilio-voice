@@ -92,7 +92,9 @@ sub before_send_messages {
             From           => $from,
             To             => $to,
             Url            => $twiml_url,
-            StatusCallback => $status_callback_url
+            StatusCallback => $status_callback_url,
+            StatusCallbackEvent => 'completed',
+            StatusCallbackMethod => 'POST',
           ];
         $request->authorization_basic( $AccountSid, $AuthToken );
         $response = $ua->request($request);
