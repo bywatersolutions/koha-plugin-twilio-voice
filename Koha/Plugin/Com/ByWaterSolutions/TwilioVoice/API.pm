@@ -48,13 +48,15 @@ sub twiml {
     $tw->Response->Say(
         {
             voice    => "alice",
-            language => "en-AU"
+            language => "en-US"
         },
         $message->content
     );
 
     $message->status('sent');
     $message->store();
+
+    warn "TWILIO: twiml(): " . Data::Dumper::Dumper( $tw->to_string );
 
     return $c->render( status => 200, format => "xml", text => $tw->to_string );
 }
@@ -75,6 +77,8 @@ sub update_message_status {
 
     if ( my %data = parse_urlencoded($body) ) {
         my $twilio_status = $data{CallStatus};
+
+        warn "TWILIO: update_message_status(): " . Data::Dumper::Dumper( \%data );
 
         my $status = $twilio_status eq 'queued'      ? 'pending' : # We should get another status update later
                      $twilio_status eq 'ringing'     ? 'pending' : # Ditto
