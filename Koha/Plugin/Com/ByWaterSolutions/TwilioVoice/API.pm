@@ -45,9 +45,19 @@ sub twiml {
     }
 
     my $tw = new WWW::Twilio::TwiML;
-    $tw->Response->Say(
+    $tw->Response
+    ->Pause({length => 2})->parent
+    ->Say(
         {
-            voice    => "alice",
+            voice    => "Polly.Joanna",
+            language => "en-US"
+        },
+        $message->content
+    )->parent
+    ->Pause({length => 2})->parent
+    ->Say(
+        {
+            voice    => "Polly.Joanna",
             language => "en-US"
         },
         $message->content
