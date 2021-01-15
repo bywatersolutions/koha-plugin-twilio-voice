@@ -90,14 +90,14 @@ sub update_message_status {
 
         warn "TWILIO: update_message_status(): " . Data::Dumper::Dumper( \%data );
 
-        my $status = $twilio_status eq 'queued'      ? 'pending' : # We should get another status update later
-                     $twilio_status eq 'ringing'     ? 'pending' : # Ditto
-                     $twilio_status eq 'in-progress' ? 'sent'    : # The person picked up, basically completed
-                     $twilio_status eq 'completed'   ? 'sent'    : # Clearly completed
-                     $twilio_status eq 'busy'        ? 'pending' : # Phone was busy, requeue and try again
-                     $twilio_status eq 'failed'      ? 'failed'  : # Phone number was most likely invalid
-                     $twilio_status eq 'no-answer'   ? 'pending' : # Nobody picked up, requeue and try again
-                                                        'failed' ; # Staus was something we didn't expect
+        my $status = $twilio_status eq 'queued'      ? 'sent'   : # We should get another status update later
+                     $twilio_status eq 'ringing'     ? 'sent'   : # Ditto
+                     $twilio_status eq 'in-progress' ? 'sent'   : # The person picked up, basically completed
+                     $twilio_status eq 'completed'   ? 'sent'   : # Clearly completed
+                     $twilio_status eq 'busy'        ? 'failed' : # TODO: Make retrying busy a plugin setting
+                     $twilio_status eq 'failed'      ? 'failed' : # Phone number was most likely invalid
+                     $twilio_status eq 'no-answer'   ? 'failed' : # See TODO above
+                                                       'failed' ; # Staus was something we didn't expect
         $message->status($status);
         $message->store();
 
