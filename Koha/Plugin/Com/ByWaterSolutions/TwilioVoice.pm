@@ -60,6 +60,9 @@ sub before_send_messages {
     );
 
     while ( my $m = $messages->next ) {
+        $m->status('sent');
+        $m->update();
+
         my $patron = Koha::Patrons->find( $m->borrowernumber );
         next unless $patron;
 
@@ -86,6 +89,8 @@ sub before_send_messages {
         my $url = "https://api.twilio.com/2010-04-01/Accounts/$AccountSid/Calls.json";
         my $twiml_url = "$staffClientBaseURL/api/v1/contrib/twiliovoice/message/$message_id/twiml";
         my $status_callback_url = "$staffClientBaseURL/api/v1/contrib/twiliovoice/message/$message_id/status";
+
+        warn "Twilio Phone message sent to $to for message id $message_id";
 
         $request = POST $url,
           [
