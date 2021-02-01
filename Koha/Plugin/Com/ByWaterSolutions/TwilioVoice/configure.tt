@@ -45,18 +45,6 @@
 				Send only the first <em>HOLD</em> notice for each patron, mark all others as sent
 			  </label>
 			</div>
-			<div class="checkbox">
-			  <label>
-				<input type="checkbox" name="single_notice_checkin" value="1" [% IF single_notice_checkin %]checked="checked"[% END %]>
-				Send only the first <em>CHECKIN</em> notice for each patron, mark all others as sent
-			  </label>
-			</div>
-			<div class="checkbox">
-			  <label>
-				<input type="checkbox" name="single_notice_checkout" value="1" [% IF single_notice_checkout %]checked="checked"[% END %]>
-				Send only the first <em>CHECKOUT</em> notice for each patron, mark all others as sent
-			  </label>
-			</div>
 		</fieldset>
 
         <button type="submit" class="btn btn-default">Submit</button>
