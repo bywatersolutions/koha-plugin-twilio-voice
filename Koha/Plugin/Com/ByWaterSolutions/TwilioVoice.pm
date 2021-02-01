@@ -49,6 +49,9 @@ sub before_send_messages {
 
     my $AccountSid = $self->retrieve_data('AccountSid');
     my $AuthToken  = $self->retrieve_data('AuthToken');
+    my $single_notice_hold     = $self->retrieve_data('single_notice_hold');
+    my $single_notice_checkin  = $self->retrieve_data('single_notice_checkin');
+    my $single_notice_checkout = $self->retrieve_data('single_notice_checkout');
 
     my $from = $self->retrieve_data('From');
 
@@ -59,9 +62,23 @@ sub before_send_messages {
         }
     );
 
+    my $sent = {};
     while ( my $m = $messages->next ) {
         $m->status('sent');
         $m->update();
+
+        if ( $m->letter_code eq 'HOLD' && $single_notice_hold ) {
+            next if $sent->{HOLD}->{ $m->borrowernumber };
+            $sent->{HOLD}->{ $m->borrowernumber } = 1;
+        }
+        elsif ( $m->letter_code eq 'CHECKIN' && $single_notice_checkin ) {
+            next if $sent->{CHECKIN}->{ $m->borrowernumber };
+            $sent->{CHECKIN}->{ $m->borrowernumber } = 1;
+        }
+        elsif ( $m->letter_code eq 'CHECKOUT' && $single_notice_checkout ) {
+            next if $sent->{CHECKOUT}->{ $m->borrowernumber };
+            $sent->{CHECKOUT}->{ $m->borrowernumber } = 1;
+        }
 
         my $patron = Koha::Patrons->find( $m->borrowernumber );
         next unless $patron;
@@ -118,6 +135,9 @@ sub configure {
             AccountSid => $self->retrieve_data('AccountSid'),
             AuthToken  => $self->retrieve_data('AuthToken'),
             From       => $self->retrieve_data('From'),
+            single_notice_hold     => $self->retrieve_data('single_notice_hold'),
+            single_notice_checkin  => $self->retrieve_data('single_notice_checkin'),
+            single_notice_checkout => $self->retrieve_data('single_notice_checkout'),
         );
 
         $self->output_html( $template->output() );
@@ -128,6 +148,9 @@ sub configure {
                 AccountSid => $cgi->param('AccountSid'),
                 AuthToken  => $cgi->param('AuthToken'),
                 From       => $cgi->param('From'),
+                single_notice_hold     => $cgi->param('single_notice_hold') ? 1 : 0,
+                single_notice_checkin  => $cgi->param('single_notice_checkin') ? 1 : 0,
+                single_notice_checkout => $cgi->param('single_notice_checkout') ? 1 : 0,
             }
         );
         $self->go_home();

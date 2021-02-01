@@ -16,21 +16,48 @@
         <input type="hidden" name="method" value="[% METHOD %]"/>
         <input type="hidden" name="save" value="1" />
 
-        <div class="form-group">
-            <label for="AccountSid">Account SID:</label>
-            <input type="text" class="form-control" name="AccountSid" value="[% AccountSid %]"/>
-        </div>
+		<fieldset>
+			<legend>Configuration</legend>
 
-        <div class="form-group">
-            <label for="AuthToken">Auth Token:</label>
-            <input type="text" class="form-control" name="AuthToken" value="[% AuthToken %]"/>
-        </div>
+			<div class="form-group">
+				<label for="AccountSid">Account SID:</label>
+				<input type="text" class="form-control" name="AccountSid" value="[% AccountSid %]"/>
+			</div>
 
-        <div class="form-group">
-            <label for="From">From Phone Number:</label>
-            <input type="text" class="form-control" name="From" value="[% From %]"/>
-            <div class="hint">Any phone number you specify here must be a Twilio phone number (you can purchase a number through the console) or a verified outgoing caller id for your account.</div>
-        </div>
+			<div class="form-group">
+				<label for="AuthToken">Auth Token:</label>
+				<input type="text" class="form-control" name="AuthToken" value="[% AuthToken %]"/>
+			</div>
+
+			<div class="form-group">
+				<label for="From">From Phone Number:</label>
+				<input type="text" class="form-control" name="From" value="[% From %]"/>
+				<div class="hint">Any phone number you specify here must be a Twilio phone number (you can purchase a number through the console) or a verified outgoing caller id for your account.</div>
+			</div>
+		</fieldset>
+
+		<fieldset>
+			<legend>Options</legend>
+
+			<div class="checkbox">
+			  <label>
+				<input type="checkbox" name="single_notice_hold" value="1" [% IF single_notice_hold %]checked="checked"[% END %]>
+				Send only the first <em>HOLD</em> notice for each patron, mark all others as sent
+			  </label>
+			</div>
+			<div class="checkbox">
+			  <label>
+				<input type="checkbox" name="single_notice_checkin" value="1" [% IF single_notice_checkin %]checked="checked"[% END %]>
+				Send only the first <em>CHECKIN</em> notice for each patron, mark all others as sent
+			  </label>
+			</div>
+			<div class="checkbox">
+			  <label>
+				<input type="checkbox" name="single_notice_checkout" value="1" [% IF single_notice_checkout %]checked="checked"[% END %]>
+				Send only the first <em>CHECKOUT</em> notice for each patron, mark all others as sent
+			  </label>
+			</div>
+		</fieldset>
 
         <button type="submit" class="btn btn-default">Submit</button>
 
