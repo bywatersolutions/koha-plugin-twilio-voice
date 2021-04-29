@@ -49,7 +49,8 @@ sub before_send_messages {
 
     my $AccountSid = $self->retrieve_data('AccountSid');
     my $AuthToken  = $self->retrieve_data('AuthToken');
-    my $single_notice_hold     = $self->retrieve_data('single_notice_hold');
+    my $single_notice_hold = $self->retrieve_data('single_notice_hold');
+    my $skip_if_other_transports = $self->retrieve_data('skip_if_other_transports');
 
     my $from = $self->retrieve_data('From');
 
@@ -66,8 +67,37 @@ sub before_send_messages {
         $m->update();
 
         if ( $m->letter_code eq 'HOLD' && $single_notice_hold ) {
-            next if $sent->{HOLD}->{ $m->borrowernumber };
-            $sent->{HOLD}->{ $m->borrowernumber } = 1;
+            if ( $sent->{HOLD}->{ $m->borrowernumber } ) {
+                $sent->{HOLD}->{ $m->borrowernumber } = 1;
+
+                $m->status('deleted'); # As close a status to 'skipped' as we have
+                $m->update();
+
+                next;
+            }
+        }
+
+        if ( $skip_if_other_transports ) {
+            my $other_messages = Koha::Notice::Messages->search(
+                {
+                    -and => [
+                        borrowernumber => $m->borrowernumber,
+                        status => 'pending',
+                        letter_code => $m->letter_code,
+                        -or => [
+                            message_transport_type => 'email',
+                            message_transport_type => 'sms',
+                        ]
+                    ],
+                }
+            );
+
+            if ( $other_messages->count ) {
+                $m->status('deleted'); # As close a status to 'skipped' as we have
+                $m->update();
+
+                next;
+            }
         }
 
         my $patron = Koha::Patrons->find( $m->borrowernumber );
@@ -126,6 +156,7 @@ sub configure {
             AuthToken  => $self->retrieve_data('AuthToken'),
             From       => $self->retrieve_data('From'),
             single_notice_hold => $self->retrieve_data('single_notice_hold'),
+            skip_if_other_transports => $self->retrieve_data('skip_if_other_transports'),
         );
 
         $self->output_html( $template->output() );
@@ -137,6 +168,7 @@ sub configure {
                 AuthToken  => $cgi->param('AuthToken'),
                 From       => $cgi->param('From'),
                 single_notice_hold => $cgi->param('single_notice_hold') ? 1 : 0,
+                skip_if_other_transports => $cgi->param('skip_if_other_transports') ? 1 : 0,
             }
         );
         $self->go_home();
