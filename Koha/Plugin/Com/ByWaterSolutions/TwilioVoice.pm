@@ -117,7 +117,7 @@ sub before_send_messages {
         my $data = decode_json( $response->decoded_content );
         my $to   = $data->{phone_number};
 
-        my $staffClientBaseURL = C4::Context->preference('staffClientBaseURL');
+        my $staffClientBaseURL = $self->retrieve_data('IncomingApiCallsUrl') || C4::Context->preference('staffClientBaseURL');
         $staffClientBaseURL =~ s/[^[:print:]]+//g;
         $staffClientBaseURL =~ s/[^[:ascii:]]+//g;
 
@@ -155,6 +155,7 @@ sub configure {
             AccountSid => $self->retrieve_data('AccountSid'),
             AuthToken  => $self->retrieve_data('AuthToken'),
             From       => $self->retrieve_data('From'),
+            IncomingApiCallsUrl  => $self->retrieve_data('IncomingApiCallsUrl'),
             single_notice_hold => $self->retrieve_data('single_notice_hold'),
             skip_if_other_transports => $self->retrieve_data('skip_if_other_transports'),
         );
@@ -167,6 +168,7 @@ sub configure {
                 AccountSid => $cgi->param('AccountSid'),
                 AuthToken  => $cgi->param('AuthToken'),
                 From       => $cgi->param('From'),
+                IncomingApiCallsUrl  => $cgi->param('IncomingApiCallsUrl'),
                 single_notice_hold => $cgi->param('single_notice_hold') ? 1 : 0,
                 skip_if_other_transports => $cgi->param('skip_if_other_transports') ? 1 : 0,
             }
