@@ -140,6 +140,10 @@ sub before_send_messages {
           ];
         $request->authorization_basic( $AccountSid, $AuthToken );
         $response = $ua->request($request);
+
+        unless ($response->is_success) {
+            warn "Twilio response indicates failure: " . $response->status_line;
+        }
     }
 }
 
