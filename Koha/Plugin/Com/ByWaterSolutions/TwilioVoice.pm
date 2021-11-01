@@ -131,12 +131,13 @@ sub before_send_messages {
 
         $request = POST $url,
           [
-            From           => $from,
-            To             => $to,
-            Url            => $twiml_url,
-            StatusCallback => $status_callback_url,
-            StatusCallbackEvent => 'completed',
+            From                 => $from,
+            To                   => $to,
+            Url                  => $twiml_url,
+            StatusCallback       => $status_callback_url,
+            StatusCallbackEvent  => 'completed',
             StatusCallbackMethod => 'POST',
+            MachineDetection     => 'DetectMessageEnd',
           ];
         $request->authorization_basic( $AccountSid, $AuthToken );
         $response = $ua->request($request);
