@@ -44,6 +44,7 @@
 
 		<fieldset>
 			<legend>Options</legend>
+            <small class="form-text text-muted">NOTE: Any phone messages skipped by the following options will show as "deleted" in Koha to indicated they were never sent.</small>
 
 			<div class="checkbox">
 			  <label>
