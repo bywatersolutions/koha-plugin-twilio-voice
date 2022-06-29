@@ -47,7 +47,8 @@ sub new {
 sub before_send_messages {
     my ($self, $params) = @_;
 
-    my $type = $params->{type} // q{};
+    my $type        = $params->{type};
+    my $letter_code = $params->{letter_code};
 
     # If a type limit is passed in, only run if the type is "phone"
     return if $type && $type ne 'phone';
@@ -59,12 +60,12 @@ sub before_send_messages {
 
     my $from = $self->retrieve_data('From');
 
-    my $messages = Koha::Notice::Messages->search(
-        {
-            status                 => 'pending',
-            message_transport_type => 'phone',
-        }
-    );
+    my $parameters = {
+        status                 => 'pending',
+        message_transport_type => 'phone',
+    };
+    $params->{letter_code} = $letter_code if $letter_code;
+    my $messages = Koha::Notice::Messages->search($parameters);
 
     my $sent = {};
     while ( my $m = $messages->next ) {

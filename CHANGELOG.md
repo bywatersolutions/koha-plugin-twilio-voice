@@ -6,7 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.1.6] - 2021-06-29
 ### Added
-- Add ability to detect type command line parameter and honor it
+- Add ability to detect "type" command line parameter and honor it
+- Add ability to detect "letter code" command line parameter and honor it
 
 ## [0.0.9] - 2021-02-01
 ### Added
