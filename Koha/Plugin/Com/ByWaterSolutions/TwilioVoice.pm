@@ -45,7 +45,12 @@ sub new {
 }
 
 sub before_send_messages {
-    my ($self) = @_;
+    my ($self, $params) = @_;
+
+    my $type = $params->{type} // q{};
+
+    # If a type limit is passed in, only run if the type is "phone"
+    return if $type && $type ne 'phone';
 
     my $AccountSid = $self->retrieve_data('AccountSid');
     my $AuthToken  = $self->retrieve_data('AuthToken');
