@@ -20,7 +20,7 @@ If those modules are not installed, this plugin may not appear in your Koha inst
 
 # Plugin Configuration
 
-> :warning: **Do not call your patrons by accident in the middle of the night:** Run multiple instances of `process_message_queue.pl` witht the `-t` paramter. Limit sending of phone calls common waking hours in your area.
+> :warning: **Do not call your patrons by accident in the middle of the night!** Run multiple instances of `process_message_queue.pl` with the `-t` paramter. Limit sending of phone calls common waking hours in your area.
 
 * Create a Twilio account, log in to Twilio
 * Create a new project
