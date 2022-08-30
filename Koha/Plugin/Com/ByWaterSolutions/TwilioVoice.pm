@@ -132,6 +132,7 @@ sub before_send_messages {
         my $url = "https://api.twilio.com/2010-04-01/Accounts/$AccountSid/Calls.json";
         my $twiml_url = "$staffClientBaseURL/api/v1/contrib/twiliovoice/message/$message_id/twiml";
         my $status_callback_url = "$staffClientBaseURL/api/v1/contrib/twiliovoice/message/$message_id/status";
+        my $async_amd_status_callback_url = "$staffClientBaseURL/api/v1/contrib/twiliovoice/message/$message_id/amd";
 
         warn "Twilio Phone message sent to $to for message id $message_id";
 
@@ -144,6 +145,9 @@ sub before_send_messages {
             StatusCallbackEvent  => 'completed',
             StatusCallbackMethod => 'POST',
             MachineDetection     => 'DetectMessageEnd',
+            AsyncAmd             => 'true',
+            AsyncAmdStatusCallback       => $async_amd_status_callback_url,
+            AsyncAmdStatusCallbackMethod => 'POST',
           ];
         $request->authorization_basic( $AccountSid, $AuthToken );
         $response = $ua->request($request);

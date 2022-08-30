@@ -48,7 +48,42 @@
         {
           "name":"message_id",
           "in":"path",
-          "description":"Internal patron identifier",
+          "description":"Internal patron message identifier",
+          "required":true,
+          "type":"integer"
+        }
+      ],
+      "responses":{
+        "200":{
+          "description":"Message updated"
+        },
+        "404":{
+          "description":"An error occured",
+          "schema":{
+            "type":"object",
+            "properties":{
+              "error":{
+                "description":"An explanation for the error",
+                "type":"string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/message/{message_id}/amd":{
+    "post":{
+      "x-mojo-to":"Com::ByWaterSolutions::TwilioVoice::API#amd_callback",
+      "operationId":"AsyncAmdStatusCallback",
+      "tags":[
+        "messages"
+      ],
+      "parameters":[
+        {
+          "name":"message_id",
+          "in":"path",
+          "description":"Internal patron message identifier",
           "required":true,
           "type":"integer"
         }
