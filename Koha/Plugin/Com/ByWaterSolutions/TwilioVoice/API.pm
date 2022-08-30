@@ -44,6 +44,12 @@ sub twiml {
         );
     }
 
+    my $content = q{<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say>Ahoy! You have a message from your library. Just a moment.</Say>
+  <Play>http://demo.twilio.com/docs/classic.mp3</Play>
+</Response>};
+
     my $tw = new WWW::Twilio::TwiML;
     $tw->Response
     ->Pause({length => 2})->parent
@@ -52,7 +58,7 @@ sub twiml {
             voice    => "Polly.Joanna",
             language => "en-US"
         },
-        $message->content
+        $content
     )->parent
     ->Pause({length => 2})->parent
     ->Say(
