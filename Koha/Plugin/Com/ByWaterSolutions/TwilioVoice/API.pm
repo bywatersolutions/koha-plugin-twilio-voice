@@ -119,6 +119,7 @@ sub update_message_status {
 
 sub amd_callback {
     my $c = shift->openapi->valid_input or return;
+    my $self = Koha::Plugin::Com::ByWaterSolutions::ItemRecalls->new({});
 
     my $message_id = $c->validation->param('message_id');
     my $CallSid    = $c->validation->param('CallSid');
