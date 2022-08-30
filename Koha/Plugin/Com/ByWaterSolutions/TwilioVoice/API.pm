@@ -166,7 +166,7 @@ sub amd_callback {
     $staffClientBaseURL =~ s/[^[:ascii:]]+//g;
 
     # Send the call request
-    my $url = "https://api.twilio.com/2010-04-01/Accounts/$AccountSid/Calls/$CallSid.json"
+    my $url = "https://api.twilio.com/2010-04-01/Accounts/$AccountSid/Calls/$CallSid.json";
 
     my $request = POST $url,
       [
