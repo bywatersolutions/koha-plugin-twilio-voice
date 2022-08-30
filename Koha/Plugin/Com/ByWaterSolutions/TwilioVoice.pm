@@ -145,8 +145,9 @@ sub before_send_messages {
             StatusCallbackEvent  => 'completed',
             StatusCallbackMethod => 'POST',
             MachineDetection     => 'DetectMessageEnd',
-            AsyncAMD             => 'true',
-            AsyncAmdStatusCallback => $async_amd_status_callback_url,
+            AsyncAmd             => 'true',
+            AsyncAmdStatusCallback       => $async_amd_status_callback_url,
+            AsyncAmdStatusCallbackMethod => 'POST',
           ];
         $request->authorization_basic( $AccountSid, $AuthToken );
         $response = $ua->request($request);
