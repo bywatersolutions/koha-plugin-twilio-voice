@@ -19,8 +19,9 @@ use Modern::Perl;
 
 use Mojo::Base 'Mojolicious::Controller';
 
-use WWW::Twilio::TwiML;
+use HTTP::Request::Common;
 use WWW::Form::UrlEncoded qw(parse_urlencoded);
+use WWW::Twilio::TwiML;
 
 use Koha::Notice::Messages;
 
@@ -119,7 +120,6 @@ sub update_message_status {
 
 sub amd_callback {
     my $c = shift->openapi->valid_input or return;
-    my $self = Koha::Plugin::Com::ByWaterSolutions::ItemRecalls->new({});
 
     my $message_id = $c->validation->param('message_id');
     my $CallSid    = $c->validation->param('CallSid');
@@ -155,8 +155,9 @@ sub amd_callback {
 
     warn "TWILIO: twiml(): " . Data::Dumper::Dumper( $tw->to_string );
 
-    my $AccountSid = $self->retrieve_data('AccountSid');
-    my $AuthToken  = $self->retrieve_data('AuthToken');
+    #FIXME: Better to just grab from the database directly?
+    my $self      = Koha::Plugin::Com::ByWaterSolutions::ItemRecalls->new( {} );
+    my $AuthToken = $self->retrieve_data('AuthToken');
 
     my $ua = LWP::UserAgent->new;
 
@@ -167,7 +168,7 @@ sub amd_callback {
     # Send the call request
     my $url = "https://api.twilio.com/2010-04-01/Accounts/$AccountSid/Calls/$CallSid.json"
 
-    $request = POST $url,
+    my $request = POST $url,
       [
           Twiml => $tw->to_string,
       ];
