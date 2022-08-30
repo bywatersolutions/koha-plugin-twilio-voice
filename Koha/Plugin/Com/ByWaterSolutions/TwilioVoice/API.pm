@@ -111,4 +111,65 @@ sub update_message_status {
     }
 }
 
+sub amd_callback {
+    my $c = shift->openapi->valid_input or return;
+
+    my $message_id = $c->validation->param('message_id');
+    my $CallSid    = $c->validation->param('CallSid');
+    my $AccountSid = $c->validation->param('AccountSid');
+    my $AnsweredBy = $c->validation->param('AnsweredBy');
+
+    my $message    = Koha::Notice::Messages->find($message_id);
+    unless ($message) {
+        return $c->render(
+            status  => 404,
+            openapi => { error => "Message not found." }
+        );
+    }
+
+    my $tw = new WWW::Twilio::TwiML;
+    $tw->Response
+    ->Pause({length => 2})->parent
+    ->Say(
+        {
+            voice    => "Polly.Joanna",
+            language => "en-US"
+        },
+        $message->content
+    )->parent
+    ->Pause({length => 2})->parent
+    ->Say(
+        {
+            voice    => "Polly.Joanna",
+            language => "en-US"
+        },
+        $message->content
+    );
+
+    warn "TWILIO: twiml(): " . Data::Dumper::Dumper( $tw->to_string );
+
+    my $AccountSid = $self->retrieve_data('AccountSid');
+    my $AuthToken  = $self->retrieve_data('AuthToken');
+
+    my $ua = LWP::UserAgent->new;
+
+    my $staffClientBaseURL = $self->retrieve_data('IncomingApiCallsUrl') || C4::Context->preference('staffClientBaseURL');
+    $staffClientBaseURL =~ s/[^[:print:]]+//g;
+    $staffClientBaseURL =~ s/[^[:ascii:]]+//g;
+
+    # Send the call request
+    my $url = "https://api.twilio.com/2010-04-01/Accounts/$AccountSid/Calls/$CallSid.json"
+
+    $request = POST $url,
+      [
+          Twiml => $tw->to_string,
+      ];
+    $request->authorization_basic( $AccountSid, $AuthToken );
+    $response = $ua->request($request);
+
+    unless ($response->is_success) {
+        warn "Twilio response indicates failure: " . $response->status_line;
+    }
+}
+
 1;
