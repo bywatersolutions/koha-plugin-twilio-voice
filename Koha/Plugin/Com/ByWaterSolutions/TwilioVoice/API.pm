@@ -173,7 +173,7 @@ sub amd_callback {
           Twiml => $tw->to_string,
       ];
     $request->authorization_basic( $AccountSid, $AuthToken );
-    $response = $ua->request($request);
+    my $response = $ua->request($request);
 
     unless ($response->is_success) {
         warn "Twilio response indicates failure: " . $response->status_line;
