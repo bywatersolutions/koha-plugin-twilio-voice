@@ -1,134 +1,134 @@
 {
-  "/message/{message_id}/twiml":{
-    "post":{
-      "x-mojo-to":"Com::ByWaterSolutions::TwilioVoice::API#twiml",
-      "operationId":"BotherPatron",
-      "tags":[
-        "messages"
-      ],
-      "parameters":[
-        {
-          "name":"message_id",
-          "in":"path",
-          "description":"Internal patron identifier",
-          "required":true,
-          "type":"integer"
-        }
-      ],
-      "produces":[
-        "application/xml"
-      ],
-      "responses":{
-        "200":{
-          "description":"TwiML"
-        },
-        "404":{
-          "description":"An error occured",
-          "schema":{
-            "type":"object",
-            "properties":{
-              "error":{
-                "description":"An explanation for the error",
-                "type":"string"
-              }
+    "/message/{message_id}/twiml": {
+        "post": {
+            "x-mojo-to": "Com::ByWaterSolutions::TwilioVoice::API#twiml",
+            "operationId": "BotherPatron",
+            "tags": [
+                "messages"
+            ],
+            "parameters": [
+                {
+                    "name": "message_id",
+                    "in": "path",
+                    "description": "Internal patron identifier",
+                    "required": true,
+                    "type": "integer"
+                }
+            ],
+            "produces": [
+                "application/xml"
+            ],
+            "responses": {
+                "200": {
+                    "description": "TwiML"
+                },
+                "404": {
+                    "description": "An error occured",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "error": {
+                                "description": "An explanation for the error",
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
             }
-          }
         }
-      }
+    },
+    "/message/{message_id}/status": {
+        "post": {
+            "x-mojo-to": "Com::ByWaterSolutions::TwilioVoice::API#update_message_status",
+            "operationId": "updateMessageStatus",
+            "tags": [
+                "messages"
+            ],
+            "parameters": [
+                {
+                    "name": "message_id",
+                    "in": "path",
+                    "description": "Internal patron message identifier",
+                    "required": true,
+                    "type": "integer"
+                }
+            ],
+            "responses": {
+                "204": {
+                    "description": "Message updated"
+                },
+                "404": {
+                    "description": "An error occured",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "error": {
+                                "description": "An explanation for the error",
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "501": {
+                    "description": "An error occured",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "error": {
+                                "description": "Twilio call update failed",
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/message/{message_id}/amd": {
+        "post": {
+            "x-mojo-to": "Com::ByWaterSolutions::TwilioVoice::API#amd_callback",
+            "operationId": "AsyncAmdStatusCallback",
+            "tags": [
+                "messages"
+            ],
+            "parameters": [
+                {
+                    "name": "message_id",
+                    "in": "path",
+                    "description": "Internal patron message identifier",
+                    "required": true,
+                    "type": "integer"
+                }
+            ],
+            "responses": {
+                "204": {
+                    "description": "Message updated"
+                },
+                "404": {
+                    "description": "An error occured",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "error": {
+                                "description": "An explanation for the error",
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "501": {
+                    "description": "An error occured",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "error": {
+                                "description": "Twilio call update failed",
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
-  },
-  "/message/{message_id}/status":{
-    "post":{
-      "x-mojo-to":"Com::ByWaterSolutions::TwilioVoice::API#update_message_status",
-      "operationId":"updateMessageStatus",
-      "tags":[
-        "messages"
-      ],
-      "parameters":[
-        {
-          "name":"message_id",
-          "in":"path",
-          "description":"Internal patron message identifier",
-          "required":true,
-          "type":"integer"
-        }
-      ],
-      "responses":{
-        "204":{
-          "description":"Message updated"
-        },
-        "404":{
-          "description":"An error occured",
-          "schema":{
-            "type":"object",
-            "properties":{
-              "error":{
-                "description":"An explanation for the error",
-                "type":"string"
-              }
-            }
-          }
-        },
-        "501":{
-          "description":"An error occured",
-          "schema":{
-            "type":"object",
-            "properties":{
-              "error":{
-                "description":"Twilio call update failed",
-                "type":"string"
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "/message/{message_id}/amd":{
-    "post":{
-      "x-mojo-to":"Com::ByWaterSolutions::TwilioVoice::API#amd_callback",
-      "operationId":"AsyncAmdStatusCallback",
-      "tags":[
-        "messages"
-      ],
-      "parameters":[
-        {
-          "name":"message_id",
-          "in":"path",
-          "description":"Internal patron message identifier",
-          "required":true,
-          "type":"integer"
-        }
-      ],
-      "responses":{
-        "204":{
-          "description":"Message updated"
-        },
-        "404":{
-          "description":"An error occured",
-          "schema":{
-            "type":"object",
-            "properties":{
-              "error":{
-                "description":"An explanation for the error",
-                "type":"string"
-              }
-            }
-          }
-        },
-        "501":{
-          "description":"An error occured",
-          "schema":{
-            "type":"object",
-            "properties":{
-              "error":{
-                "description":"Twilio call update failed",
-                "type":"string"
-              }
-            }
-          }
-        }
-      }
-    }
-  }
 }
