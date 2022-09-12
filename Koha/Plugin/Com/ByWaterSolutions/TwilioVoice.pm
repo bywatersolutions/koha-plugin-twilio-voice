@@ -145,7 +145,7 @@ sub before_send_messages {
             StatusCallbackEvent  => 'completed',
             StatusCallbackMethod => 'POST',
             MachineDetection     => 'DetectMessageEnd',
-            AsyncAmd             => 'true',
+            AsyncAMD             => 'true',
             AsyncAmdStatusCallback       => $async_amd_status_callback_url,
             AsyncAmdStatusCallbackMethod => 'POST',
           ];

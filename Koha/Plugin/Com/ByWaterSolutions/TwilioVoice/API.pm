@@ -22,6 +22,7 @@ use Mojo::Base 'Mojolicious::Controller';
 use HTTP::Request::Common;
 use WWW::Form::UrlEncoded qw(parse_urlencoded);
 use WWW::Twilio::TwiML;
+use Try::Tiny;
 
 use Koha::Notice::Messages;
 
@@ -76,7 +77,9 @@ sub twiml {
         },
         "You have a message from your library, please wait."
     )->parent->Pause( { length => 2 } )
-      ->parent->Play("http://com.twilio.music.classical.s3.amazonaws.com/ClockworkWaltz.mp3");
+      ->parent->Play(
+        "http://com.twilio.music.classical.s3.amazonaws.com/ClockworkWaltz.mp3"
+      );
 
     $message->status('sent');
     $message->store();
@@ -87,8 +90,7 @@ sub twiml {
 }
 
 sub update_message_status {
-    warn
-"Koha::Plugin::Com::ByWaterSolutions::TwilioVoice::API::update_message_status";
+    warn "Koha::Plugin::Com::ByWaterSolutions::TwilioVoice::API::update_message_status";
     my $c = shift->openapi->valid_input or return;
 
     my $message_id = $c->validation->param('message_id');
@@ -111,7 +113,7 @@ sub update_message_status {
         my $status =
           $twilio_status eq 'queued'
           ? 'sent'
-          :    # We should get another status update later
+          :            # We should get another status update later
           $twilio_status eq 'ringing' ? 'sent' :    # Ditto
           $twilio_status eq 'in-progress'
           ? 'sent'
@@ -132,7 +134,7 @@ sub update_message_status {
     }
     else {
         return $c->render(
-            status  => 500,
+            status  => 501,
             openapi => { error => "Unable to decode json" }
         );
     }
@@ -141,30 +143,10 @@ sub update_message_status {
 sub amd_callback {
     warn "Koha::Plugin::Com::ByWaterSolutions::TwilioVoice::API::amd_callback";
     my $c = shift->openapi->valid_input or return;
+    return try {
 
-    my $message_id = $c->validation->param('message_id');
-    my $message    = Koha::Notice::Messages->find($message_id);
-    unless ($message) {
-        return $c->render(
-            status  => 404,
-            openapi => { error => "Message not found." }
-        );
-    }
-
-    my $body = $c->req->body;
-    warn "BODY: $body";
-
-    if ( my %data = parse_urlencoded($body) ) {
-        my $CallSid    = $data{CallSid};
-        my $AccountSid = $data{AccountSid};
-        my $AnsweredBy = $data{AnsweredBy};
-
-        warn "message_id: $message_id";
-        warn "CallSid: $CallSid";
-        warn "AccountSid: $AccountSid";
-        warn "AnsweredBy: $AnsweredBy";
-
-        my $message = Koha::Notice::Messages->find($message_id);
+        my $message_id = $c->validation->param('message_id');
+        my $message    = Koha::Notice::Messages->find($message_id);
         unless ($message) {
             return $c->render(
                 status  => 404,
@@ -172,59 +154,91 @@ sub amd_callback {
             );
         }
 
-        my $tw = new WWW::Twilio::TwiML;
-        $tw->Response->Pause( { length => 2 } )->parent->Say(
-            {
-                voice    => "Polly.Joanna",
-                language => "en-US"
-            },
-            $message->content
-        )->parent->Pause( { length => 2 } )->parent->Say(
-            {
-                voice    => "Polly.Joanna",
-                language => "en-US"
-            },
-            $message->content
-        );
+        my $body = $c->req->body;
+        warn "BODY: $body";
 
-        warn "TWILIO: twiml(): " . Data::Dumper::Dumper( $tw->to_string );
+        if ( my %data = parse_urlencoded($body) ) {
+            my $CallSid    = $data{CallSid};
+            my $AccountSid = $data{AccountSid};
+            my $AnsweredBy = $data{AnsweredBy};
 
-        #FIXME: Better to just grab from the database directly?
-        my $self = Koha::Plugin::Com::ByWaterSolutions::TwilioVoice->new( {} );
-        my $AuthToken = $self->retrieve_data('AuthToken');
-        warn "AUTH TOKEN: $AuthToken";
+            warn "message_id: $message_id";
+            warn "CallSid: $CallSid";
+            warn "AccountSid: $AccountSid";
+            warn "AnsweredBy: $AnsweredBy";
 
-        my $ua = LWP::UserAgent->new;
+            my $message = Koha::Notice::Messages->find($message_id);
+            unless ($message) {
+                return $c->render(
+                    status  => 404,
+                    openapi => { error => "Message not found." }
+                );
+            }
 
-        # Send the call request
-        my $url = "https://api.twilio.com/2010-04-01/Accounts/$AccountSid/Calls/$CallSid.json";
-        warn "URL: $url";
+            my $tw = new WWW::Twilio::TwiML;
+            $tw->Response->Pause( { length => 2 } )->parent->Say(
+                {
+                    voice    => "Polly.Joanna",
+                    language => "en-US"
+                },
+                $message->content
+            )->parent->Pause( { length => 2 } )->parent->Say(
+                {
+                    voice    => "Polly.Joanna",
+                    language => "en-US"
+                },
+                $message->content
+            );
 
-        my $request = POST $url,
-          [ Twiml => $tw->to_string, ];
-        $request->authorization_basic( $AccountSid, $AuthToken );
-        my $response = $ua->request($request);
-        warn "RESPONSE MESSAGE: " . $response->message;
-        warn "RESPONSE CODE: " . $response->code;
+            warn "TWILIO: twiml(): " . Data::Dumper::Dumper( $tw->to_string );
 
-        if ( $response->is_success ) {
-            warn "RESPONDING WITH 204";
-            return $c->render( status => 204, text => q{} );
+            #FIXME: Better to just grab from the database directly?
+            my $self =
+              Koha::Plugin::Com::ByWaterSolutions::TwilioVoice->new( {} );
+            my $AuthToken = $self->retrieve_data('AuthToken');
+            warn "AUTH TOKEN: $AuthToken";
+
+            my $ua = LWP::UserAgent->new;
+
+            # Send the call request
+            my $url = "https://api.twilio.com/2010-04-01/Accounts/$AccountSid/Calls/$CallSid.json";
+            warn "URL: $url";
+
+            my $request = POST $url, [ Twiml => $tw->to_string, ];
+            $request->authorization_basic( $AccountSid, $AuthToken );
+            my $response = $ua->request($request);
+            warn "RESPONSE MESSAGE: " . $response->message;
+            warn "RESPONSE CODE: " . $response->code;
+
+            if ( $response->is_success ) {
+                warn "Twilio response indicates success!";
+                return $c->render( status => 204, text => q{} );
+            }
+            else {
+                warn "Twilio response indicates failure: "
+                  . $response->status_line;
+
+                # Twilio failure usually indicates the call has already ended
+                # Return a 2xx code to let Twilio know there's not a problem with our API
+                return $c->render( status => 204, text => q{} );
+
+                # return $c->render(
+                #    status  => 501,
+                #    openapi => { error => "Twilio call update failed" }
+                #);
+            }
         }
         else {
-            warn "Twilio response indicates failure: " . $response->status_line;
-            warn "RESPONDING WITH 500";
+            warn "AMD 501 UNABLE TO PARSE BODY PARAMS";
             return $c->render(
-                status  => 500,
-                openapi => { error => "Twilio call update failed" }
+                status  => 501,
+                openapi => { error => "Unable to parse body parameters" }
             );
         }
     }
-    else {
-        return $c->render(
-            status  => 500,
-            openapi => { error => "Unable to parse body parameters" }
-        );
+    catch {
+        warn "CAUGHT UNHANDLED ERROR: $_";
+        $c->unhandled_exception($_);
     }
 }
 

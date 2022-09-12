@@ -54,7 +54,7 @@
         }
       ],
       "responses":{
-        "200":{
+        "204":{
           "description":"Message updated"
         },
         "404":{
@@ -64,6 +64,18 @@
             "properties":{
               "error":{
                 "description":"An explanation for the error",
+                "type":"string"
+              }
+            }
+          }
+        },
+        "501":{
+          "description":"An error occured",
+          "schema":{
+            "type":"object",
+            "properties":{
+              "error":{
+                "description":"Twilio call update failed",
                 "type":"string"
               }
             }
@@ -89,7 +101,7 @@
         }
       ],
       "responses":{
-        "200":{
+        "204":{
           "description":"Message updated"
         },
         "404":{
@@ -99,6 +111,18 @@
             "properties":{
               "error":{
                 "description":"An explanation for the error",
+                "type":"string"
+              }
+            }
+          }
+        },
+        "501":{
+          "description":"An error occured",
+          "schema":{
+            "type":"object",
+            "properties":{
+              "error":{
+                "description":"Twilio call update failed",
                 "type":"string"
               }
             }
