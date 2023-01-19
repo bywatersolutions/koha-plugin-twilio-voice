@@ -53,6 +53,8 @@ sub before_send_messages {
     # If a type limit is passed in, only run if the type is "phone"
     return if $type && $type ne 'phone';
 
+    my $BorrowernumberFilter = $self->retrieve_data('BorrowernumberFilter');
+
     my $AccountSid = $self->retrieve_data('AccountSid');
     my $AuthToken  = $self->retrieve_data('AuthToken');
     my $single_notice_hold = $self->retrieve_data('single_notice_hold');
@@ -64,6 +66,8 @@ sub before_send_messages {
         status                 => 'pending',
         message_transport_type => 'phone',
     };
+    $parameters->{borrowernumber} = $BorrowernumberFilter if $BorrowernumberFilter;
+
     $params->{letter_code} = $letter_code if $letter_code;
     my $messages = Koha::Notice::Messages->search($parameters);
 
@@ -173,6 +177,7 @@ sub configure {
             IncomingApiCallsUrl  => $self->retrieve_data('IncomingApiCallsUrl'),
             single_notice_hold => $self->retrieve_data('single_notice_hold'),
             skip_if_other_transports => $self->retrieve_data('skip_if_other_transports'),
+            BorrowernumberFilter => $self->retrieve_data('BorrowernumberFilter'),
         );
 
         $self->output_html( $template->output() );
@@ -186,6 +191,7 @@ sub configure {
                 IncomingApiCallsUrl  => $cgi->param('IncomingApiCallsUrl'),
                 single_notice_hold => $cgi->param('single_notice_hold') ? 1 : 0,
                 skip_if_other_transports => $cgi->param('skip_if_other_transports') ? 1 : 0,
+                BorrowernumberFilter => $cgi->param('BorrowernumberFilter'),
             }
         );
         $self->go_home();

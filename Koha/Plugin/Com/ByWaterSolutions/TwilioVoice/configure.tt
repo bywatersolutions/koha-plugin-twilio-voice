@@ -61,6 +61,16 @@
 			</div>
 		</fieldset>
 
+		<fieldset>
+			<legend>Debugging</legend>
+
+			<div class="form-group">
+				<label for="AccountSid">Limit to borrowernumber:</label>
+				<input type="text" class="form-control" name="BorrowernumberFilter" value="[% BorrowernumberFilter %]"/>
+                <div class="hint">Enter a borrowernumber here and only messages for that patron will be processed</div>
+			</div>
+		</fieldset>
+
         <button type="submit" class="btn btn-default">Submit</button>
 
     </form>
