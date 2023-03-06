@@ -50,7 +50,8 @@ sub before_send_messages {
     my $letter_code = $params->{letter_code};
 
     # If a type limit is passed in, only run if the type is "phone"
-    return if $type && $type ne 'phone';
+    return if ref($type) eq 'ARRAY' && !grep(/^phone$/, @$type); # 22.11.00, 22.05.8, 21.11.14 +, bug 27265
+    return if ref($type) eq q{}     && $type ne 'phone';
 
     my $BorrowernumberFilter = $self->retrieve_data('BorrowernumberFilter');
 
