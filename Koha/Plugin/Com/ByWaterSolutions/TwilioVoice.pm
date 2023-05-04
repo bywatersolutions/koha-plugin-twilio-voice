@@ -65,7 +65,7 @@ sub before_send_messages {
     my $parameters = {status => 'pending', message_transport_type => 'phone',};
     $parameters->{borrowernumber} = $BorrowernumberFilter if $BorrowernumberFilter;
 
-    $params->{letter_code} = $letter_code if $letter_code;
+    $parameterss->{letter_code} = $letter_code if $letter_code;
     my $messages = Koha::Notice::Messages->search($parameters);
 
     my $sent = {};
