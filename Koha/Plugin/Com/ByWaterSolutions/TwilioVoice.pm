@@ -150,6 +150,8 @@ sub before_send_messages {
 
         unless ($response->is_success) {
             warn "Twilio response indicates failure: " . $response->status_line;
+            $m->status('failed');
+            $m->update();
         }
     }
 }
