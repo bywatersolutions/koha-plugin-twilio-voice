@@ -99,7 +99,6 @@ sub before_send_messages {
             if ($other_messages->count) {
                 $m->status('deleted');    # As close a status to 'skipped' as we have
                 $m->update();
-
                 next;
             }
         }
@@ -108,6 +107,12 @@ sub before_send_messages {
         next unless $patron;
 
         my $phone = $patron->phone || $patron->mobile;
+
+        unless ( $phone ) {
+            $m->status('failed');
+            $m->update();
+            next;
+        }
 
         # Normalize the phone number to E.164 format, Twilio has a convenient ( and free ) API for this.
         my $ua      = LWP::UserAgent->new;
