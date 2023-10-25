@@ -48,6 +48,7 @@ sub before_send_messages {
 
     my $type        = $params->{type};
     my $letter_code = $params->{letter_code};
+    my $where       = $params->{where};
 
     # If a type limit is passed in, only run if the type is "phone"
     return if ref($type) eq 'ARRAY' && scalar @$type > 0 && !grep(/^phone$/, @$type); # 22.11.00, 22.05.8, 21.11.14 +, bug 27265
@@ -69,6 +70,7 @@ sub before_send_messages {
     $parameters->{borrowernumber} = $BorrowernumberFilter if $BorrowernumberFilter;
     $parameters->{letter_code} = $letter_code if $letter_code;
     my $messages = Koha::Notice::Messages->search($parameters);
+    $messages = $messages->search( \$where ) if $where;
 
     my $sent = {};
     while (my $m = $messages->next) {
