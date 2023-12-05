@@ -59,6 +59,13 @@
 			    Do not call patron if there is an unsent email or SMS notice for the same patron with a matching letter code
 			  </label>
 			</div>
+
+			<div class="checkbox">
+			  <label>
+				<input type="checkbox" name="skip_odue_if_other_if_sms_or_email" value="1" [% IF skip_odue_if_other_if_sms_or_email %]checked="checked"[% END %]>
+                Do not call patrons for overdues if they have a valid sms alert number or email address.
+			  </label>
+			</div>
 		</fieldset>
 
 		<fieldset>

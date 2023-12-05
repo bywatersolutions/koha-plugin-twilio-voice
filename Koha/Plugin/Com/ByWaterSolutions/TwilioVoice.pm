@@ -11,6 +11,7 @@ use Koha::Notice::Messages;
 use HTTP::Request::Common;
 use LWP::UserAgent;
 use Mojo::JSON qw(decode_json);
+use List::Util qw(first);
 
 ## Here we set our plugin version
 our $VERSION         = "{VERSION}";
@@ -59,10 +60,11 @@ sub before_send_messages {
 
     my $BorrowernumberFilter = $self->retrieve_data('BorrowernumberFilter');
 
-    my $AccountSid               = $self->retrieve_data('AccountSid');
-    my $AuthToken                = $self->retrieve_data('AuthToken');
-    my $single_notice_hold       = $self->retrieve_data('single_notice_hold');
-    my $skip_if_other_transports = $self->retrieve_data('skip_if_other_transports');
+    my $AccountSid                         = $self->retrieve_data('AccountSid');
+    my $AuthToken                          = $self->retrieve_data('AuthToken');
+    my $single_notice_hold                 = $self->retrieve_data('single_notice_hold');
+    my $skip_if_other_transports           = $self->retrieve_data('skip_if_other_transports');
+    my $skip_odue_if_other_if_sms_or_email = $self->retrieve_data('skip_odue_if_other_if_sms_or_email');
 
     my $from = $self->retrieve_data('From');
 
@@ -72,10 +74,28 @@ sub before_send_messages {
     my $messages = Koha::Notice::Messages->search($parameters);
     $messages = $messages->search( \$where ) if $where;
 
+    my $dbh = C4::Context->dbh;
+
+    my $letter1 = $dbh->selectcol_arrayref(q{SELECT DISTINCT(letter1) FROM overduerules});
+    my $letter2 = $dbh->selectcol_arrayref(q{SELECT DISTINCT(letter2) FROM overduerules});
+    my $letter3 = $dbh->selectcol_arrayref(q{SELECT DISTINCT(letter3) FROM overduerules});
+    my @odue_letter_codes = ( @$letter1, @$letter2, @$letter3 );
+
     my $sent = {};
     while (my $m = $messages->next) {
         $m->status('sent');
         $m->update();
+
+        my $patron = Koha::Patrons->find($m->borrowernumber);
+        next unless $patron;
+
+        my $phone = $patron->phone || $patron->mobile;
+
+        unless ( $phone ) {
+            $m->status('failed');
+            $m->update();
+            next;
+        }
 
         if ($m->letter_code eq 'HOLD' && $single_notice_hold) {
             if ($sent->{HOLD}->{$m->borrowernumber}) {
@@ -105,15 +125,15 @@ sub before_send_messages {
             }
         }
 
-        my $patron = Koha::Patrons->find($m->borrowernumber);
-        next unless $patron;
+        # If enabled, skip sending if this is an overdue notice *and* the patron has an sms number or email address
+        if (if $skip_odue_if_other_if_sms_or_email && any { $m->{letter_code} eq $_ } @odue_letter_codes) {
+            my $skip = $patron->notice_email_address || $patron->smsalertnumber;
 
-        my $phone = $patron->phone || $patron->mobile;
-
-        unless ( $phone ) {
-            $m->status('failed');
-            $m->update();
-            next;
+            if ($skip) {
+                $m->status('deleted');    # As close a status to 'skipped' as we have
+                $m->update();
+                next;
+            }
         }
 
         # Normalize the phone number to E.164 format, Twilio has a convenient ( and free ) API for this.
@@ -172,26 +192,28 @@ sub configure {
 
         ## Grab the values we already have for our settings, if any exist
         $template->param(
-            AccountSid               => $self->retrieve_data('AccountSid'),
-            AuthToken                => $self->retrieve_data('AuthToken'),
-            From                     => $self->retrieve_data('From'),
-            IncomingApiCallsUrl      => $self->retrieve_data('IncomingApiCallsUrl'),
-            single_notice_hold       => $self->retrieve_data('single_notice_hold'),
-            skip_if_other_transports => $self->retrieve_data('skip_if_other_transports'),
-            BorrowernumberFilter     => $self->retrieve_data('BorrowernumberFilter'),
+            AccountSid                         => $self->retrieve_data('AccountSid'),
+            AuthToken                          => $self->retrieve_data('AuthToken'),
+            From                               => $self->retrieve_data('From'),
+            IncomingApiCallsUrl                => $self->retrieve_data('IncomingApiCallsUrl'),
+            single_notice_hold                 => $self->retrieve_data('single_notice_hold'),
+            skip_if_other_transports           => $self->retrieve_data('skip_if_other_transports'),
+            BorrowernumberFilter               => $self->retrieve_data('BorrowernumberFilter'),
+            skip_odue_if_other_if_sms_or_email => $self->retrieve_data('skip_odue_if_other_if_sms_or_email'),
         );
 
         $self->output_html($template->output());
     }
     else {
         $self->store_data({
-            AccountSid               => $cgi->param('AccountSid'),
-            AuthToken                => $cgi->param('AuthToken'),
-            From                     => $cgi->param('From'),
-            IncomingApiCallsUrl      => $cgi->param('IncomingApiCallsUrl'),
-            single_notice_hold       => $cgi->param('single_notice_hold')       ? 1 : 0,
-            skip_if_other_transports => $cgi->param('skip_if_other_transports') ? 1 : 0,
-            BorrowernumberFilter     => $cgi->param('BorrowernumberFilter'),
+            AccountSid                         => $cgi->param('AccountSid'),
+            AuthToken                          => $cgi->param('AuthToken'),
+            From                               => $cgi->param('From'),
+            IncomingApiCallsUrl                => $cgi->param('IncomingApiCallsUrl'),
+            single_notice_hold                 => $cgi->param('single_notice_hold')       ? 1 : 0,
+            skip_if_other_transports           => $cgi->param('skip_if_other_transports') ? 1 : 0,
+            BorrowernumberFilter               => $cgi->param('BorrowernumberFilter'),
+            skip_odue_if_other_if_sms_or_email => $cgi->param('skip_odue_if_other_if_sms_or_email') ? 1 : 0,
         });
         $self->go_home();
     }
