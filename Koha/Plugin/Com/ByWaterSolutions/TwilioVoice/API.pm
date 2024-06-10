@@ -69,17 +69,13 @@ sub twiml {
     );
 =cut
 
+    my $HoldMusicUrl
+      = $self->retrieve_data('HoldMusicUrl') || "http://com.twilio.music.classical.s3.amazonaws.com/ClockworkWaltz.mp3";
+
     my $tw = new WWW::Twilio::TwiML;
-    $tw->Response->Pause( { length => 2 } )->parent->Say(
-        {
-            voice    => "Polly.Joanna",
-            language => "en-US"
-        },
-        "You have a message from your library, please wait."
-    )->parent->Pause( { length => 2 } )
-      ->parent->Play(
-        "http://com.twilio.music.classical.s3.amazonaws.com/ClockworkWaltz.mp3"
-      );
+    $tw->Response->Pause({length => 2})->parent->Say({voice => "Polly.Joanna", language => "en-US"},
+        "You have a message from your library, please wait.")->parent->Pause({length => 2})
+      ->parent->Play($HoldMusicUrl);
 
     $message->status('sent');
     $message->store();

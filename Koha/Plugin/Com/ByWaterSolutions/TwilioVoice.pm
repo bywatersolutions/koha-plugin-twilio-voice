@@ -194,6 +194,7 @@ sub configure {
         $template->param(
             AccountSid                         => $self->retrieve_data('AccountSid'),
             AuthToken                          => $self->retrieve_data('AuthToken'),
+            HoldMusicUrl                       => $self->retrieve_data('HoldMusicUrl'),
             From                               => $self->retrieve_data('From'),
             IncomingApiCallsUrl                => $self->retrieve_data('IncomingApiCallsUrl'),
             single_notice_hold                 => $self->retrieve_data('single_notice_hold'),
@@ -208,6 +209,7 @@ sub configure {
         $self->store_data({
             AccountSid                         => $cgi->param('AccountSid'),
             AuthToken                          => $cgi->param('AuthToken'),
+            HoldMusicUrl                       => $cgi->param('HoldMusicUrl'),
             From                               => $cgi->param('From'),
             IncomingApiCallsUrl                => $cgi->param('IncomingApiCallsUrl'),
             single_notice_hold                 => $cgi->param('single_notice_hold')       ? 1 : 0,
