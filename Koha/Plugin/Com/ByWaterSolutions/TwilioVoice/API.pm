@@ -69,6 +69,7 @@ sub twiml {
     );
 =cut
 
+    my $self = Koha::Plugin::Com::ByWaterSolutions::TwilioVoice->new({});
     my $HoldMusicUrl
       = $self->retrieve_data('HoldMusicUrl') || "http://com.twilio.music.classical.s3.amazonaws.com/ClockworkWaltz.mp3";
 
