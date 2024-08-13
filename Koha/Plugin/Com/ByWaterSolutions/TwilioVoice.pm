@@ -145,17 +145,17 @@ sub before_send_messages {
         my $data = decode_json($response->decoded_content);
         my $to   = $data->{phone_number};
 
-        my $staffClientBaseURL
-          = $self->retrieve_data('IncomingApiCallsUrl') || C4::Context->preference('staffClientBaseURL');
-        $staffClientBaseURL =~ s/[^[:print:]]+//g;
-        $staffClientBaseURL =~ s/[^[:ascii:]]+//g;
+        my $OPACBaseURL
+          = $self->retrieve_data('IncomingApiCallsUrl') || C4::Context->preference('OPACBaseURL');
+        $OPACBaseURL =~ s/[^[:print:]]+//g;
+        $OPACBaseURL =~ s/[^[:ascii:]]+//g;
 
         # Send the call request
         my $message_id                    = $m->id;
         my $url                           = "https://api.twilio.com/2010-04-01/Accounts/$AccountSid/Calls.json";
-        my $twiml_url                     = "$staffClientBaseURL/api/v1/contrib/twiliovoice/message/$message_id/twiml";
-        my $status_callback_url           = "$staffClientBaseURL/api/v1/contrib/twiliovoice/message/$message_id/status";
-        my $async_amd_status_callback_url = "$staffClientBaseURL/api/v1/contrib/twiliovoice/message/$message_id/amd";
+        my $twiml_url                     = "$OPACBaseURL/api/v1/contrib/twiliovoice/message/$message_id/twiml";
+        my $status_callback_url           = "$OPACBaseURL/api/v1/contrib/twiliovoice/message/$message_id/status";
+        my $async_amd_status_callback_url = "$OPACBaseURL/api/v1/contrib/twiliovoice/message/$message_id/amd";
 
         warn "Twilio Phone message sent to $to for message id $message_id";
 
