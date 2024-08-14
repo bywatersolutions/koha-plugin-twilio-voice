@@ -2,7 +2,7 @@
     "/message/{message_id}/twiml": {
         "post": {
             "x-mojo-to": "Com::ByWaterSolutions::TwilioVoice::API#twiml",
-            "operationId": "BotherPatron",
+            "operationId": "twilioGetTwiml",
             "tags": [
                 "messages"
             ],
@@ -40,7 +40,7 @@
     "/message/{message_id}/status": {
         "post": {
             "x-mojo-to": "Com::ByWaterSolutions::TwilioVoice::API#update_message_status",
-            "operationId": "updateMessageStatus",
+            "operationId": "twilioUpdateMessageStatus",
             "tags": [
                 "messages"
             ],
@@ -87,7 +87,7 @@
     "/message/{message_id}/amd": {
         "post": {
             "x-mojo-to": "Com::ByWaterSolutions::TwilioVoice::API#amd_callback",
-            "operationId": "AsyncAmdStatusCallback",
+            "operationId": "twilioAsyncAmdStatusCallback",
             "tags": [
                 "messages"
             ],
