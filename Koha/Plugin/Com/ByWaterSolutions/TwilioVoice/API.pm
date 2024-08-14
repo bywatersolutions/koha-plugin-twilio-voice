@@ -36,8 +36,9 @@ use Koha::Notice::Messages;
 
 sub twiml {
     warn "Koha::Plugin::Com::ByWaterSolutions::TwilioVoice::API::twiml";
+    my $c = shift->openapi->valid_input or return;
+
     return try {
-        my $c = shift->openapi->valid_input or return;
 
         my $message_id = $c->validation->param('message_id');
         my $message    = Koha::Notice::Messages->find($message_id);
@@ -70,9 +71,9 @@ sub twiml {
 
 sub update_message_status {
     warn "Koha::Plugin::Com::ByWaterSolutions::TwilioVoice::API::update_message_status";
-    return try {
-        my $c = shift->openapi->valid_input or return;
+    my $c = shift->openapi->valid_input or return;
 
+    return try {
         my $message_id = $c->validation->param('message_id');
         my $message    = Koha::Notice::Messages->find($message_id);
         unless ($message) {
@@ -126,6 +127,7 @@ sub update_message_status {
 sub amd_callback {
     warn "Koha::Plugin::Com::ByWaterSolutions::TwilioVoice::API::amd_callback";
     my $c = shift->openapi->valid_input or return;
+
     return try {
 
         my $message_id = $c->validation->param('message_id');
