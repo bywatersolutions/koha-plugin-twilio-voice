@@ -224,7 +224,7 @@ sub amd_callback {
     catch {
         warn "CAUGHT UNHANDLED ERROR: $_";
         $c->unhandled_exception($_);
-    }
+    };
 }
 
 1;
