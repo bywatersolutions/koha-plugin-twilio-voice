@@ -50,6 +50,7 @@ sub before_send_messages {
     my $type        = $params->{type};
     my $letter_code = $params->{letter_code};
     my $where       = $params->{where};
+    my $message_id  = $params->{message_id};
 
     # If a type limit is passed in, only run if the type is "phone"
     return if ref($type) eq 'ARRAY' && scalar @$type > 0 && !grep(/^phone$/, @$type); # 22.11.00, 22.05.8, 21.11.14 +, bug 27265
@@ -71,6 +72,7 @@ sub before_send_messages {
     my $parameters = {status => 'pending', message_transport_type => 'phone',};
     $parameters->{borrowernumber} = $BorrowernumberFilter if $BorrowernumberFilter;
     $parameters->{letter_code} = $letter_code if $letter_code;
+    $parameters->{message_id} = $message_id if $message_id;
     my $messages = Koha::Notice::Messages->search($parameters);
     $messages = $messages->search( \$where ) if $where;
 
