@@ -11,7 +11,7 @@ use Koha::Notice::Messages;
 use HTTP::Request::Common;
 use LWP::UserAgent;
 use Mojo::JSON qw(decode_json);
-use List::Util qw(first);
+use List::Util qw(first any);
 
 ## Here we set our plugin version
 our $VERSION         = "{VERSION}";
