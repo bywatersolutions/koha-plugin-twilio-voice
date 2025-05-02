@@ -61,7 +61,7 @@ sub twiml {
         $message->status('sent');
         $message->store();
 
-        warn "TWILIO: twiml(): " . Data::Dumper::Dumper( $tw->to_string );
+        warn "TWILIO VOICE: twiml(): " . Data::Dumper::Dumper( $tw->to_string );
 
         return $c->render( status => 200, format => "xml", text => $tw->to_string );
     } catch {
@@ -88,7 +88,7 @@ sub update_message_status {
         if ( my %data = parse_urlencoded($body) ) {
             my $twilio_status = $data{CallStatus};
 
-            warn "TWILIO: update_message_status(): "
+            warn "TWILIO VOICE: update_message_status(): "
               . Data::Dumper::Dumper( \%data );
 
             my $status =
@@ -140,17 +140,17 @@ sub amd_callback {
         }
 
         my $body = $c->req->body;
-        warn "BODY: $body";
+        warn "TWILIO VOICE: BODY: $body";
 
         if ( my %data = parse_urlencoded($body) ) {
             my $CallSid    = $data{CallSid};
             my $AccountSid = $data{AccountSid};
             my $AnsweredBy = $data{AnsweredBy};
 
-            warn "message_id: $message_id";
-            warn "CallSid: $CallSid";
-            warn "AccountSid: $AccountSid";
-            warn "AnsweredBy: $AnsweredBy";
+            warn "TWILIO VOICE: message_id: $message_id";
+            warn "TWILIO VOICE: CallSid: $CallSid";
+            warn "TWILIO VOICE: AccountSid: $AccountSid";
+            warn "TWILIO VOICE: AnsweredBy: $AnsweredBy";
 
             my $message = Koha::Notice::Messages->find($message_id);
             unless ($message) {
@@ -181,26 +181,25 @@ sub amd_callback {
             my $self =
               Koha::Plugin::Com::ByWaterSolutions::TwilioVoice->new( {} );
             my $AuthToken = $self->retrieve_data('AuthToken');
-            warn "AUTH TOKEN: $AuthToken";
 
             my $ua = LWP::UserAgent->new;
 
             # Send the call request
             my $url = "https://api.twilio.com/2010-04-01/Accounts/$AccountSid/Calls/$CallSid.json";
-            warn "URL: $url";
+            warn "TWILIO VOICE: URL: $url";
 
             my $request = POST $url, [ Twiml => $tw->to_string, ];
             $request->authorization_basic( $AccountSid, $AuthToken );
             my $response = $ua->request($request);
-            warn "RESPONSE MESSAGE: " . $response->message;
-            warn "RESPONSE CODE: " . $response->code;
+            warn "TWILIO VOICE: RESPONSE MESSAGE: " . $response->message;
+            warn "TWILIO VOICE: RESPONSE CODE: " . $response->code;
 
             if ( $response->is_success ) {
-                warn "Twilio response indicates success!";
+                warn "TWILIO VOICE: Twilio response indicates success!";
                 return $c->render( status => 204, text => q{} );
             }
             else {
-                warn "Twilio response indicates failure: "
+                warn "TWILIO VOICE: Twilio response indicates failure: "
                   . $response->status_line;
 
                 # Twilio failure usually indicates the call has already ended
@@ -214,7 +213,7 @@ sub amd_callback {
             }
         }
         else {
-            warn "AMD 501 UNABLE TO PARSE BODY PARAMS";
+            warn "TWILIO VOICE: AMD 501 UNABLE TO PARSE BODY PARAMS";
             return $c->render(
                 status  => 501,
                 openapi => { error => "Unable to parse body parameters" }
@@ -222,7 +221,7 @@ sub amd_callback {
         }
     }
     catch {
-        warn "CAUGHT UNHANDLED ERROR: $_";
+        warn "TWILIO VOICE: CAUGHT UNHANDLED ERROR: $_";
         $c->unhandled_exception($_);
     };
 }
