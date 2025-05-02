@@ -160,22 +160,22 @@ sub amd_callback {
                 );
             }
 
-            my $tw = new WWW::Twilio::TwiML;
-            $tw->Response->Pause( { length => 2 } )->parent->Say(
-                {
-                    voice    => "Polly.Joanna",
-                    language => "en-US"
-                },
-                $message->content
-            )->parent->Pause( { length => 2 } )->parent->Say(
-                {
-                    voice    => "Polly.Joanna",
-                    language => "en-US"
-                },
-                $message->content
-            );
+            my $content;
+            if (substr($message->content, 0, 39) eq '<?xml version="1.0" encoding="UTF-8" ?>') {
+                $content = $message->content;
+            }
+            else {
+                my $tw = new WWW::Twilio::TwiML;
 
-            warn "TWILIO: twiml(): " . Data::Dumper::Dumper( $tw->to_string );
+                $tw->Response->Pause({length => 2})
+                  ->parent->Say({voice => "Polly.Joanna", language => "en-US"}, $message->content)
+                  ->parent->Pause({length => 2})
+                  ->parent->Say({voice => "Polly.Joanna", language => "en-US"}, $message->content);
+
+                $content = $tw->to_string;
+            }
+
+            warn "TWILIO VOICE: TwiML: " . Data::Dumper::Dumper( $content );
 
             #FIXME: Better to just grab from the database directly?
             my $self =
@@ -188,7 +188,7 @@ sub amd_callback {
             my $url = "https://api.twilio.com/2010-04-01/Accounts/$AccountSid/Calls/$CallSid.json";
             warn "TWILIO VOICE: URL: $url";
 
-            my $request = POST $url, [ Twiml => $tw->to_string, ];
+            my $request = POST $url, [ Twiml => $content, ];
             $request->authorization_basic( $AccountSid, $AuthToken );
             my $response = $ua->request($request);
             warn "TWILIO VOICE: RESPONSE MESSAGE: " . $response->message;
