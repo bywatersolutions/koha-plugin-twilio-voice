@@ -42,6 +42,7 @@ sub twiml {
 
         my $message_id = $c->validation->param('message_id');
         my $message    = Koha::Notice::Messages->find($message_id);
+        my $patron     - Koha::Patrons->find( $message->borrower );
         unless ($message) {
             return $c->render(
                 status  => 404,
@@ -49,21 +50,35 @@ sub twiml {
             );
         }
 
-        my $self = Koha::Plugin::Com::ByWaterSolutions::TwilioVoice->new({});
-        my $HoldMusicUrl
-          = $self->retrieve_data('HoldMusicUrl') || "http://com.twilio.music.classical.s3.amazonaws.com/ClockworkWaltz.mp3";
+        my $letter = GetPreparedLetter({
+            module      => "members",
+            letter_code => "TWILIO_INTRO",
+            message_transport_type => "phone",
+            branchcode  => $patron->branchcode,
+            objects     => {patron => $patron, borrower => $patron, message => $message},
+        });
 
-        my $tw = new WWW::Twilio::TwiML;
-        $tw->Response->Pause({length => 2})->parent->Say({voice => "Polly.Joanna", language => "en-US"},
-            "You have a message from your library, please wait.")->parent->Pause({length => 2})
-          ->parent->Play($HoldMusicUrl);
+        my $twiml;
+        if ( $letter ) {
+            $twiml = $letter->{content};
+        } else {
+            my $self = Koha::Plugin::Com::ByWaterSolutions::TwilioVoice->new({});
+            my $HoldMusicUrl
+              = $self->retrieve_data('HoldMusicUrl') || "http://com.twilio.music.classical.s3.amazonaws.com/ClockworkWaltz.mp3";
+
+            my $tw = new WWW::Twilio::TwiML;
+            $tw->Response->Pause({length => 2})->parent->Say({voice => "Polly.Joanna", language => "en-US"},
+                "You have a message from your library, please wait.")->parent->Pause({length => 2})
+              ->parent->Play($HoldMusicUrl);
+            $twiml = $tw->string;
+        }
 
         $message->status('sent');
         $message->store();
 
-        warn "TWILIO VOICE: twiml(): " . Data::Dumper::Dumper( $tw->to_string );
+        warn "TWILIO VOICE: twiml(): " . Data::Dumper::Dumper( $twiml );
 
-        return $c->render( status => 200, format => "xml", text => $tw->to_string );
+        return $c->render( status => 200, format => "xml", text => $twiml );
     } catch {
         $c->unhandled_exception($_);
     };
