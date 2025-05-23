@@ -78,6 +78,15 @@ sub before_send_messages {
 
     my $dbh = C4::Context->dbh;
 
+    # Reset the status of any calls that may have failed due to the plugin api being inaccessible
+    $dbh->do(q{
+        UPDATE message_queue
+        SET failure_code = NULL,
+            status = 'failed'
+        WHERE failure_code = 'PENDING RESPONSE'
+          AND updated_on < NOW() - INTERVAL 10 MINUTE;
+    });
+
     my $letter1 = $dbh->selectcol_arrayref(q{SELECT DISTINCT(letter1) FROM overduerules});
     my $letter2 = $dbh->selectcol_arrayref(q{SELECT DISTINCT(letter2) FROM overduerules});
     my $letter3 = $dbh->selectcol_arrayref(q{SELECT DISTINCT(letter3) FROM overduerules});
@@ -181,6 +190,8 @@ sub before_send_messages {
             warn "Twilio response indicates failure: " . $response->status_line;
             $m->status('failed');
             $m->update();
+        } else {
+            $m->failure_code('PENDING RESPONSE');
         }
     }
 }

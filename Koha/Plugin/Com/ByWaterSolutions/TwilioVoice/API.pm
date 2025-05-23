@@ -74,12 +74,14 @@ sub twiml {
         }
 
         $message->status('sent');
+        $message->failure_code(undef); # Clear the PENDING RESPONSE we stored here when we sent the call request
         $message->store();
 
         warn "TWILIO VOICE: twiml(): " . Data::Dumper::Dumper( $twiml );
 
         return $c->render( status => 200, format => "xml", text => $twiml );
     } catch {
+        warn "TwilioVoice ERROR: $_";
         $c->unhandled_exception($_);
     };
 }
@@ -107,23 +109,18 @@ sub update_message_status {
               . Data::Dumper::Dumper( \%data );
 
             my $status =
-              $twilio_status eq 'queued'
-              ? 'sent'
-              :            # We should get another status update later
-              $twilio_status eq 'ringing' ? 'sent' :    # Ditto
-              $twilio_status eq 'in-progress'
-              ? 'sent'
-              :    # The person picked up, basically completed
-              $twilio_status eq 'completed' ? 'sent' :    # Clearly completed
-              $twilio_status eq 'busy'
-              ? 'failed'
-              :    # TODO: Make retrying busy a plugin setting
-              $twilio_status eq 'failed'
-              ? 'failed'
-              :    # Phone number was most likely invalid
-              $twilio_status eq 'no-answer' ? 'failed' :    # See TODO above
-              'failed';    # Staus was something we didn't expect
+              $twilio_status eq 'queued'      ? 'sent'   :    # We should get another status update later
+              $twilio_status eq 'ringing'     ? 'sent'   :    # Ditto
+              $twilio_status eq 'in-progress' ? 'sent'   :    # The person picked up, basically completed
+              $twilio_status eq 'completed'   ? 'sent'   :      # Clearly completed
+              $twilio_status eq 'busy'        ? 'failed' :    # TODO: Make retrying busy a plugin setting
+              $twilio_status eq 'failed'      ? 'failed' :    # Phone number was most likely invalid
+              $twilio_status eq 'no-answer'   ? 'failed' :    # See TODO above
+                                'failed';    # Staus was something we didn't expect
+
+
             $message->status($status);
+            $message->failure_code(undef) if $twilio_status ne 'failed'; # Clear the PENDING RESPONSE we stored here when we sent the call request
             $message->store();
 
             return $c->render( status => 204, text => q{} );
