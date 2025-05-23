@@ -42,7 +42,7 @@ sub twiml {
 
         my $message_id = $c->validation->param('message_id');
         my $message    = Koha::Notice::Messages->find($message_id);
-        my $patron     - Koha::Patrons->find( $message->borrower );
+        my $patron     = Koha::Patrons->find( $message->borrowernumber );
         unless ($message) {
             return $c->render(
                 status  => 404,
@@ -50,13 +50,13 @@ sub twiml {
             );
         }
 
-        my $letter = GetPreparedLetter({
+        my $letter = C4::Letters::GetPreparedLetter(
             module      => "members",
             letter_code => "TWILIO_INTRO",
             message_transport_type => "phone",
             branchcode  => $patron->branchcode,
             objects     => {patron => $patron, borrower => $patron, message => $message},
-        });
+        );
 
         my $twiml;
         if ( $letter ) {
@@ -70,7 +70,7 @@ sub twiml {
             $tw->Response->Pause({length => 2})->parent->Say({voice => "Polly.Joanna", language => "en-US"},
                 "You have a message from your library, please wait.")->parent->Pause({length => 2})
               ->parent->Play($HoldMusicUrl);
-            $twiml = $tw->string;
+            $twiml = $tw->to_string;
         }
 
         $message->status('sent');
