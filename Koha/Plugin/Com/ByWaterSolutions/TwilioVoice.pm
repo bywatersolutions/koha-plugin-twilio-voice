@@ -53,8 +53,11 @@ sub before_send_messages {
     my $message_id  = $params->{message_id};
 
     # If a type limit is passed in, only run if the type is "phone"
-    return if ref($type) eq 'ARRAY' && scalar @$type > 0 && !grep(/^phone$/, @$type); # 22.11.00, 22.05.8, 21.11.14 +, bug 27265
-    return if ref($type) eq q{}     && $type ne q{}      && $type ne 'phone';
+    return
+         if ref($type) eq 'ARRAY'
+      && scalar @$type > 0
+      && !grep(/^phone$/, @$type);    # 22.11.00, 22.05.8, 21.11.14 +, bug 27265
+    return if ref($type) eq q{} && $type ne q{} && $type ne 'phone';
 
     # If this version of Koha sends an arrayref, check the length of it and set the var to false if it has no elements
     $letter_code = undef if ref($letter_code) eq 'ARRAY' && scalar @$letter_code == 0;
@@ -71,10 +74,10 @@ sub before_send_messages {
 
     my $parameters = {status => 'pending', message_transport_type => 'phone',};
     $parameters->{borrowernumber} = $BorrowernumberFilter if $BorrowernumberFilter;
-    $parameters->{letter_code} = $letter_code if $letter_code;
-    $parameters->{message_id} = $message_id if $message_id;
+    $parameters->{letter_code}    = $letter_code          if $letter_code;
+    $parameters->{message_id}     = $message_id           if $message_id;
     my $messages = Koha::Notice::Messages->search($parameters);
-    $messages = $messages->search( \$where ) if $where;
+    $messages = $messages->search(\$where) if $where;
 
     my $dbh = C4::Context->dbh;
 
@@ -87,10 +90,10 @@ sub before_send_messages {
           AND updated_on < NOW() - INTERVAL 10 MINUTE;
     });
 
-    my $letter1 = $dbh->selectcol_arrayref(q{SELECT DISTINCT(letter1) FROM overduerules});
-    my $letter2 = $dbh->selectcol_arrayref(q{SELECT DISTINCT(letter2) FROM overduerules});
-    my $letter3 = $dbh->selectcol_arrayref(q{SELECT DISTINCT(letter3) FROM overduerules});
-    my @odue_letter_codes = ( @$letter1, @$letter2, @$letter3 );
+    my $letter1           = $dbh->selectcol_arrayref(q{SELECT DISTINCT(letter1) FROM overduerules});
+    my $letter2           = $dbh->selectcol_arrayref(q{SELECT DISTINCT(letter2) FROM overduerules});
+    my $letter3           = $dbh->selectcol_arrayref(q{SELECT DISTINCT(letter3) FROM overduerules});
+    my @odue_letter_codes = (@$letter1, @$letter2, @$letter3);
 
     my $sent = {};
     while (my $m = $messages->next) {
@@ -102,7 +105,7 @@ sub before_send_messages {
 
         my $phone = $patron->phone || $patron->mobile;
 
-        unless ( $phone ) {
+        unless ($phone) {
             $m->status('failed');
             $m->update();
             next;
@@ -156,8 +159,7 @@ sub before_send_messages {
         my $data = decode_json($response->decoded_content);
         my $to   = $data->{phone_number};
 
-        my $OPACBaseURL
-          = $self->retrieve_data('IncomingApiCallsUrl') || C4::Context->preference('OPACBaseURL');
+        my $OPACBaseURL = $self->retrieve_data('IncomingApiCallsUrl') || C4::Context->preference('OPACBaseURL');
         $OPACBaseURL =~ s/[^[:print:]]+//g;
         $OPACBaseURL =~ s/[^[:ascii:]]+//g;
 
@@ -190,7 +192,8 @@ sub before_send_messages {
             warn "Twilio response indicates failure: " . $response->status_line;
             $m->status('failed');
             $m->update();
-        } else {
+        }
+        else {
             $m->failure_code('PENDING RESPONSE');
         }
     }
