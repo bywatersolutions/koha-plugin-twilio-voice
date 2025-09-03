@@ -143,13 +143,6 @@ sub amd_callback {
     return try {
 
         my $message_id = $c->validation->param('message_id');
-        my $message    = Koha::Notice::Messages->find($message_id);
-        unless ($message) {
-            return $c->render(
-                status  => 404,
-                openapi => { error => "Message not found." }
-            );
-        }
 
         my $body = $c->req->body;
         warn "TWILIO VOICE: BODY: $body";
