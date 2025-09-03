@@ -25,6 +25,7 @@ use WWW::Twilio::TwiML;
 use Try::Tiny;
 
 use Koha::Notice::Messages;
+use Koha::Notice::Templates;
 
 =head1 API
 
@@ -43,12 +44,19 @@ sub twiml {
         my $message_id = $c->validation->param('message_id');
         my $message    = Koha::Notice::Messages->find($message_id);
         my $patron     = Koha::Patrons->find( $message->borrowernumber );
+
         unless ($message) {
             return $c->render(
                 status  => 404,
                 openapi => { error => "Message not found." }
             );
         }
+
+
+        my $template = Koha::Notice::Templates->find($message->letter_id);
+        my $lang = $template->lang;
+        $lang = 'en-US' if $lang eq 'default';
+        $lang = 'en-US' if $lang eq 'en';
 
         my $letter = C4::Letters::GetPreparedLetter(
             module      => "members",
@@ -67,7 +75,7 @@ sub twiml {
               = $self->retrieve_data('HoldMusicUrl') || "http://com.twilio.music.classical.s3.amazonaws.com/ClockworkWaltz.mp3";
 
             my $tw = new WWW::Twilio::TwiML;
-            $tw->Response->Pause({length => 2})->parent->Say({voice => "Polly.Joanna", language => "en-US"},
+            $tw->Response->Pause({length => 2})->parent->Say({voice => "Polly.Joanna", language => $lang},
                 "You have a message from your library, please wait.")->parent->Pause({length => 2})
               ->parent->Play($HoldMusicUrl);
             $twiml = $tw->to_string;
@@ -165,6 +173,11 @@ sub amd_callback {
                 );
             }
 
+            my $template = Koha::Notice::Templates->find($message->letter_id);
+            my $lang = $template->lang;
+            $lang = 'en-US' if $lang eq 'default';
+            $lang = 'en-US' if $lang eq 'en';
+
             my $content;
             if (substr($message->content, 0, 39) eq '<?xml version="1.0" encoding="UTF-8" ?>') {
                 $content = $message->content;
@@ -173,9 +186,9 @@ sub amd_callback {
                 my $tw = new WWW::Twilio::TwiML;
 
                 $tw->Response->Pause({length => 2})
-                  ->parent->Say({voice => "Polly.Joanna", language => "en-US"}, $message->content)
+                  ->parent->Say({voice => "Polly.Joanna", language => $lang}, $message->content)
                   ->parent->Pause({length => 2})
-                  ->parent->Say({voice => "Polly.Joanna", language => "en-US"}, $message->content);
+                  ->parent->Say({voice => "Polly.Joanna", language => $lang}, $message->content);
 
                 $content = $tw->to_string;
             }
