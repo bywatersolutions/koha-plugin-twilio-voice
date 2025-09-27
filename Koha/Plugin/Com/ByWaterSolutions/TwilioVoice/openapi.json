@@ -13,6 +13,13 @@
                     "description": "Internal patron identifier",
                     "required": true,
                     "type": "integer"
+                },
+                {
+                    "name": "token",
+                    "in": "query",
+                    "description": "token",
+                    "required": false,
+                    "type": "string"
                 }
             ],
             "produces": [
@@ -51,6 +58,13 @@
                     "description": "Internal patron message identifier",
                     "required": true,
                     "type": "integer"
+                },
+                {
+                    "name": "token",
+                    "in": "query",
+                    "description": "token",
+                    "required": false,
+                    "type": "string"
                 }
             ],
             "responses": {
@@ -98,6 +112,13 @@
                     "description": "Internal patron message identifier",
                     "required": true,
                     "type": "integer"
+                },
+                {
+                    "name": "token",
+                    "in": "query",
+                    "description": "token",
+                    "required": false,
+                    "type": "string"
                 }
             ],
             "responses": {

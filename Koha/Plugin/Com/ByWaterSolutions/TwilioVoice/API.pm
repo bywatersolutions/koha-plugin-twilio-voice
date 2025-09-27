@@ -41,6 +41,14 @@ sub twiml {
 
     return try {
 
+        my $self = Koha::Plugin::Com::ByWaterSolutions::TwilioVoice->new( {} );
+        if ( my $token = $self->retrieve_data('token') ) {
+            return $c->render(
+                status  => 403,
+                openapi => { error => "Access denied." },
+            ) unless $token eq $c->validation->param('token');
+        }
+
         my $message_id = $c->validation->param('message_id');
         my $message    = Koha::Notice::Messages->find($message_id);
         my $patron     = Koha::Patrons->find($message->borrowernumber);
@@ -68,7 +76,6 @@ sub twiml {
             $twiml = $letter->{content};
         }
         else {
-            my $self         = Koha::Plugin::Com::ByWaterSolutions::TwilioVoice->new({});
             my $HoldMusicUrl = $self->retrieve_data('HoldMusicUrl')
               || "http://com.twilio.music.classical.s3.amazonaws.com/ClockworkWaltz.mp3";
 
@@ -98,6 +105,14 @@ sub update_message_status {
     my $c = shift->openapi->valid_input or return;
 
     return try {
+        my $self = Koha::Plugin::Com::ByWaterSolutions::TwilioVoice->new( {} );
+        if ( my $token = $self->retrieve_data('token') ) {
+            return $c->render(
+                status  => 403,
+                openapi => { error => "Access denied." },
+            ) unless $token eq $c->validation->param('token');
+        }
+
         my $message_id = $c->validation->param('message_id');
         my $message    = Koha::Notice::Messages->find($message_id);
         unless ($message) {
@@ -143,6 +158,14 @@ sub amd_callback {
 
     return try {
 
+        my $self = Koha::Plugin::Com::ByWaterSolutions::TwilioVoice->new( {} );
+        if ( my $token = $self->retrieve_data('token') ) {
+            return $c->render(
+                status  => 403,
+                openapi => { error => "Access denied." },
+            ) unless $token eq $c->validation->param('token');
+        }
+
         my $message_id = $c->validation->param('message_id');
 
         my $body = $c->req->body;
@@ -186,7 +209,6 @@ sub amd_callback {
             warn "TWILIO VOICE: TwiML: " . Data::Dumper::Dumper($content);
 
             #FIXME: Better to just grab from the database directly?
-            my $self      = Koha::Plugin::Com::ByWaterSolutions::TwilioVoice->new({});
             my $AuthToken = $self->retrieve_data('AuthToken');
 
             my $ua = LWP::UserAgent->new;

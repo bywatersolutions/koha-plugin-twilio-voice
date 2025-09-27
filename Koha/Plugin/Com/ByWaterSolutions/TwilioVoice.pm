@@ -163,12 +163,14 @@ sub before_send_messages {
         $OPACBaseURL =~ s/[^[:print:]]+//g;
         $OPACBaseURL =~ s/[^[:ascii:]]+//g;
 
+        my $token = $self->retrieve_data('token')
+
         # Send the call request
         my $message_id                    = $m->id;
         my $url                           = "https://api.twilio.com/2010-04-01/Accounts/$AccountSid/Calls.json";
-        my $twiml_url                     = "$OPACBaseURL/api/v1/contrib/twiliovoice/message/$message_id/twiml";
-        my $status_callback_url           = "$OPACBaseURL/api/v1/contrib/twiliovoice/message/$message_id/status";
-        my $async_amd_status_callback_url = "$OPACBaseURL/api/v1/contrib/twiliovoice/message/$message_id/amd";
+        my $twiml_url                     = "$OPACBaseURL/api/v1/contrib/twiliovoice/message/$message_id/twiml?token=$token";
+        my $status_callback_url           = "$OPACBaseURL/api/v1/contrib/twiliovoice/message/$message_id/status?token=$token";
+        my $async_amd_status_callback_url = "$OPACBaseURL/api/v1/contrib/twiliovoice/message/$message_id/amd?token=$token";
 
         warn "Twilio Phone message sent to $to for message id $message_id";
 
@@ -217,6 +219,7 @@ sub configure {
             skip_if_other_transports           => $self->retrieve_data('skip_if_other_transports'),
             BorrowernumberFilter               => $self->retrieve_data('BorrowernumberFilter'),
             skip_odue_if_other_if_sms_or_email => $self->retrieve_data('skip_odue_if_other_if_sms_or_email'),
+            token                              => $self->retrieve_data('token'),
         );
 
         $self->output_html($template->output());
@@ -232,6 +235,7 @@ sub configure {
             skip_if_other_transports           => $cgi->param('skip_if_other_transports') ? 1 : 0,
             BorrowernumberFilter               => $cgi->param('BorrowernumberFilter'),
             skip_odue_if_other_if_sms_or_email => $cgi->param('skip_odue_if_other_if_sms_or_email') ? 1 : 0,
+            token                              => $cgi->param('token'),
         });
         $self->go_home();
     }

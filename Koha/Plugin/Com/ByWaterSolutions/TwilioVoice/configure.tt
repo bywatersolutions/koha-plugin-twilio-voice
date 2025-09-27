@@ -50,6 +50,12 @@
                     If left empty, the plugin will use the <a href="http://com.twilio.music.classical.s3.amazonaws.com/ClockworkWaltz.mp3">default music</a>.
                 </span>
 			</div>
+
+			<div class="form-group">
+				<label for="token">Authentication token:</label>
+				<input type="text" class="form-control" name="token" value="[% token %]"/>
+                <div class="hint">If set, Koha will ignore incoming requests that don't have the token in the query paramters. <a href="https://www.uuidgenerator.net/">Generate a token here</a></div>
+			</div>
 		</fieldset>
 
 		<fieldset>
