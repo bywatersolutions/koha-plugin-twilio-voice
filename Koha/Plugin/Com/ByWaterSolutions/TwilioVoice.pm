@@ -163,7 +163,7 @@ sub before_send_messages {
         $OPACBaseURL =~ s/[^[:print:]]+//g;
         $OPACBaseURL =~ s/[^[:ascii:]]+//g;
 
-        my $token = $self->retrieve_data('token')
+        my $token = $self->retrieve_data('token');
 
         # Send the call request
         my $message_id                    = $m->id;
