@@ -29,6 +29,18 @@
                 "200": {
                     "description": "TwiML"
                 },
+                "403": {
+                    "description": "Access denied",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "error": {
+                                "description": "Access denied",
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
                 "404": {
                     "description": "An error occured",
                     "schema": {
@@ -70,6 +82,18 @@
             "responses": {
                 "204": {
                     "description": "Message updated"
+                },
+                "403": {
+                    "description": "Access denied",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "error": {
+                                "description": "Access denied",
+                                "type": "string"
+                            }
+                        }
+                    }
                 },
                 "404": {
                     "description": "An error occured",
@@ -124,6 +148,18 @@
             "responses": {
                 "204": {
                     "description": "Message updated"
+                },
+                "403": {
+                    "description": "Access denied",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "error": {
+                                "description": "Access denied",
+                                "type": "string"
+                            }
+                        }
+                    }
                 },
                 "404": {
                     "description": "An error occured",
