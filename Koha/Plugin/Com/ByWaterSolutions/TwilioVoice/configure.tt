@@ -38,7 +38,7 @@
 			<div class="form-group">
 				<label for="IncomingApiCallsUrl">Incoming API Requests URL:</label>
 				<input type="text" class="form-control" name="IncomingApiCallsUrl" value="[% IncomingApiCallsUrl %]"/>
-                <div class="hint">If left blank, Koha will default to directing Twilio to connect to the url defined in staffClientBaseURL. A different URL or IP address can be specified here to override the default.</div>
+                <div class="hint">If left blank, Koha will default to directing Twilio to connect to the url defined in OPACBaseURL. A different URL or IP address can be specified here to override the default.</div>
 			</div>
 
 			<div class="form-group">
