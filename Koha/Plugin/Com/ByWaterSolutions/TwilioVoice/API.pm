@@ -92,7 +92,13 @@ sub twiml {
 
         warn "TWILIO VOICE: twiml(): " . Data::Dumper::Dumper($twiml);
 
-        return $c->render(status => 200, format => "xml", text => $twiml);
+        # Set the content type by hand, with the charset included. A bare
+        # 'application/xml' makes Koha 26.05 and later ( Bug 37762 ) treat the
+        # response body as JSON to be converted to XML, which dies on our
+        # already-XML TwiML and gives Twilio a 500 ( Bug 43460 )
+        $c->res->headers->content_type('application/xml; charset=utf-8');
+
+        return $c->render(status => 200, text => $twiml);
     }
     catch {
         warn "TwilioVoice ERROR: $_";
