@@ -59,6 +59,12 @@ sub before_send_messages {
       && !grep(/^phone$/, @$type);    # 22.11.00, 22.05.8, 21.11.14 +, bug 27265
     return if defined($type) && ref($type) eq q{} && $type ne q{} && $type ne 'phone';
 
+    # A single message is being sent right away, e.g. a password reset email, so there is nothing to do unless it is a phone message
+    if ($message_id) {
+        my $message = Koha::Notice::Messages->find($message_id);
+        return unless $message && $message->message_transport_type eq 'phone';
+    }
+
     # If this version of Koha sends an arrayref, check the length of it and set the var to false if it has no elements
     $letter_code = undef if ref($letter_code) eq 'ARRAY' && scalar @$letter_code == 0;
 
@@ -81,14 +87,15 @@ sub before_send_messages {
 
     my $dbh = C4::Context->dbh;
 
-    # Reset the status of any calls that may have failed due to the plugin api being inaccessible
+    # Reset the status of any calls that may have failed due to the plugin api being inaccessible.
+    # This scans the whole message queue, so it is left to the full runs.
     $dbh->do(q{
         UPDATE message_queue
         SET failure_code = NULL,
             status = 'failed'
         WHERE failure_code = 'PENDING RESPONSE'
           AND updated_on < NOW() - INTERVAL 10 MINUTE;
-    });
+    }) unless $message_id;
 
     my $letter1           = $dbh->selectcol_arrayref(q{SELECT DISTINCT(letter1) FROM overduerules});
     my $letter2           = $dbh->selectcol_arrayref(q{SELECT DISTINCT(letter2) FROM overduerules});

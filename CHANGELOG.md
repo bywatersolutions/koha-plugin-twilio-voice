@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Fixed
+- Emails Koha sends right away, such as password reset and password change emails, are no longer slowed down by the plugin checking the whole notice queue first ( several seconds per email on large sites )
+
 ## [2.0.0] - 2021-06-29
 ### Added
 - Add ability to detect "type" command line parameter and honor it
